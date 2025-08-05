@@ -25,7 +25,7 @@ When prompted, enter your password.
 Make the node configuration script executable:
 
 ```bash
-chmod +x ./deployments/base/node-configs/setup-nodes.sh
+chmod +x ./dev/node-configs/setup-nodes.sh
 ```
 
 ### 3. Generate Node Configurations
@@ -33,7 +33,7 @@ chmod +x ./deployments/base/node-configs/setup-nodes.sh
 Run the setup script to generate all necessary configurations:
 
 ```bash
-./deployments/base/node-configs/setup-nodes.sh
+./dev/node-configs/setup-nodes.sh
 ```
 
 This script will:
@@ -47,7 +47,7 @@ This script will:
 Launch all services using Docker Compose:
 
 ```bash
-docker-compose -f ./deployments/dev/docker-compose.yaml up -d
+docker-compose -f ./dev/docker-compose.yaml up -d
 ```
 
 This will start:
@@ -62,7 +62,7 @@ This will start:
 Check that all services are running:
 
 ```bash
-docker-compose -f ./deployments/dev/docker-compose.yaml ps
+docker-compose -f ./dev/docker-compose.yaml ps
 ```
 
 You should see all services in the "Up" state.
@@ -73,10 +73,10 @@ Monitor the cluster logs:
 
 ```bash
 # View all service logs
-docker-compose -f ./deployments/dev/docker-compose.yaml logs -f
+docker-compose -f ./dev/docker-compose.yaml logs -f
 
 # View logs from a specific node
-docker-compose -f ./deployments/dev/docker-compose.yaml logs -f mpcium-node0
+docker-compose -f ./dev/docker-compose.yaml logs -f mpcium-node0
 ```
 
 ### 7. Stop the Cluster
@@ -84,7 +84,7 @@ docker-compose -f ./deployments/dev/docker-compose.yaml logs -f mpcium-node0
 When you're done, stop all services:
 
 ```bash
-docker-compose -f ./deployments/dev/docker-compose.yaml down
+docker-compose -f ./dev/docker-compose.yaml down
 ```
 
 ## What's Running
