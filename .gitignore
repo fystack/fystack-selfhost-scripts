@@ -1,0 +1,10 @@
+node0/
+node1/
+node2/
+peers.json
+event_initiator.key
+event_initiator.identity.json
+dev/node-configs/config.yaml
+cookies.txt
+dev/config.yaml
+dev/config.rescanner.yaml

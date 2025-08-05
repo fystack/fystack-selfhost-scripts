@@ -1,0 +1,105 @@
+name: Apex API
+version: 0.0.3
+environment: dev
+production_mode: false
+consul:
+  address: "consul:8500"
+nats:
+  url: "nats://nats-server:4222"
+db:
+  postgres:
+    host: "postgres"
+    user: "postgres"
+    dbname: "custody"
+    port: 5432
+    password: "mysecretpassword"
+    sslmode: ""
+  mongo:
+    dsn: "mongodb://admin:password@mongo:27017"
+    database: "apex"
+
+cookie:
+  same_site: strict
+
+app:
+  root_url: http://localhost:5174
+  sign_in_url: http://localhost:5174/auth
+  sign_up_url: http://localhost:5174/auth/sign-up
+  workspace_url: http://localhost:5174/auth/workspace
+  checkout_url: http://localhost:5174/checkout
+  reset_url: http://localhost:5174/auth/reset-password
+  email_verification_url: http://localhost:5174/auth/verify-email
+  cli_auth_url: http://localhost:5174/auth/cli
+oauth2:
+  google:
+    client_id: "<CLIENT_ID>"
+    client_secret: "<CLIENT_SECRET>"
+    callback_url: "http://localhost:8150/api/v1/authentication/google/callback"
+
+redis:
+  address: "redis:6379"
+  password: "6s9H5G9o4p5Fz25K9RyWd6eOryU8nQ"
+
+jwt:
+  secret: a9cb1255ea2bb890cc79c12a4fb93499
+
+email:
+  api_key: "<API_KEY>"
+  api_secret: "<API_SECRET>"
+
+cors:
+  allow_origins: http://localhost:5174
+  # allow_origins: "*"
+
+port: 8150
+
+price_refresh_period: 25m
+price_cache_duration: 30m # if no refresh then the price is still available for at least 5 more minutes
+gas_data_cache_duration: 10s
+
+wallet:
+  mpc:
+    mpcium_version: 0.3.0
+    tss_lib_version: 2.0.0
+    threshold: 2
+  standard:
+    version: 1.0.0
+
+price_providers:
+  dexscreener:
+    endpoint: "https://api.dexscreener.com/latest/dex/search"
+  coinmarketcap:
+    endpoint: "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+    api_key: ""
+encryption_key: 82441c6785f53e02dbf97db9db2107ad # 16 bytes
+
+networks:
+  ETHER_SEPOLIA_TESTNET:
+    enabled: true
+    providers:
+      - name: "alchemy"
+        http: "https://"
+        wss: "wss://"
+    start_block: 5085291
+  BASE_MAINNET:
+    enabled: false
+    providers:
+      - name: "chainstack"
+        http: "https://base-mainnet.core.chainstack.com/<APIKEY>"
+        wss: "wss://base-mainnet.core.chainstack.com/<APIKEY>"
+      - name: "infura"
+        http: "https://base-mainnet.infura.io/v3/<APIKEY>"
+        wss: "wss://base-mainnet.infura.io/ws/v3/<APIKEY>"
+  SOL_MAINNET:
+    enabled: false
+    rpc_nodes:
+      - url: "https://rpc.ironforge.network/mainnet?apiKey=<APIKEy>"
+        origin: ""
+  SOL_DEVNET:
+    enabled: true
+    rpc_nodes:
+      - url: "https://api.devnet.solana.com"
+mpc:
+  event_initiator_pk_raw: "ef8e3b8f43ef46a1433d71b8906ee80bb16c672a0545dd093b86fe44173c2085"
+  event_initiator_encrypted_pk_path: ""
+  event_initiator_encrypted_pk_password: ""
