@@ -45,7 +45,7 @@ services:
 
   postgres:
     image: postgres
-    container_name: postgres
+    container_name: postgres_fystack
     environment:
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: custody
@@ -62,7 +62,7 @@ services:
 
   redis:
     image: redis/redis-stack-server:latest
-    container_name: redis
+    container_name: redis_fystack
     ports:
       - "6379:6379"
     environment:
@@ -78,7 +78,7 @@ services:
 
   mongo:
     image: mongo:latest
-    container_name: mongo
+    container_name: mongo_fystack
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
@@ -96,7 +96,7 @@ services:
 
   nats-server:
     image: nats:latest
-    container_name: nats-server
+    container_name: nats-server_fystack
     command: -js --http_port 8222
     ports:
       - "4222:4222"
@@ -109,7 +109,7 @@ services:
 
   consul:
     image: consul:1.15.4
-    container_name: consul
+    container_name: consul_fystack
     ports:
       - "8500:8500"
       - "8601:8600/udp"
