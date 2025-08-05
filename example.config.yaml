@@ -1,0 +1,111 @@
+name: Apex API
+version: 0.0.3
+environment: dev
+production_mode: false
+db:
+  postgres:
+    host: "localhost"
+    user: "postgres"
+    dbname: "custody"
+    port: 5432
+    password: "mysecretpassword"
+    sslmode: ""
+  mongo:
+    dsn: "mongodb://admin:password@localhost:27017"
+    database: "apex"
+
+cookie:
+  same_site: strict
+
+root_url: http://localhost:8150
+app:
+  root_url: http://localhost:5174
+  sign_in_url: http://localhost:5174/auth
+  sign_up_url: http://localhost:5174/auth/sign-up
+  workspace_url: http://localhost:5174/auth/workspace
+  checkout_url: http://localhost:5174/checkout
+  reset_url: http://localhost:5174/auth/reset-password
+  email_verification_url: http://localhost:5174/auth/verify-email
+  cli_auth_url: http://localhost:5174/auth/cli
+oauth2:
+  google:
+    client_id: ""
+    client_secret: ""
+    callback_url: "http://localhost:8150/api/v1/authentication/google/callback"
+
+redis:
+  address: "localhost:6379"
+  password: "6s9H5G9o4p5Fz25K9RyWd6eOryU8nQ"
+
+jwt:
+  # hex 16 bytes (32 chars)
+  secret: ""
+
+# Resend api key, api secret
+email:
+  api_key: ""
+  api_secret: ""
+
+cors:
+  allow_origins: ""
+  # allow_origins: "*"
+
+port: 8150
+
+price_refresh_period: 10m
+price_cache_duration: 15m # if no refresh then the price is still available for at least 5 more minutes
+gas_data_cache_duration: 10s
+
+wallet:
+  mpc:
+    mpcium_version: 0.3.0
+    tss_lib_version: 2.0.0
+    threshold: 1
+  standard:
+    version: 1.0.0
+
+price_providers:
+  dexscreener:
+    endpoint: "https://api.dexscreener.com/latest/dex/search"
+  coinmarketcap:
+    endpoint: "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+    api_key: ""
+  codex:
+    endpoint: "https://graph.defined.fi/graphql"
+    api_key: ""
+
+encryption_key: "" # 32 bytes
+
+3rd_party:
+  telegram_bot_token: ""
+
+networks:
+  ETHER_SEPOLIA_TESTNET:
+    enabled: true
+    providers:
+      - name: "alchemy"
+        http: "https://..."
+        wss: "wss://..."
+  BASE_SEPOLIA_TESTNET:
+    enabled: true
+    providers:
+      - name: "alchemy"
+        http: "https://..."
+        wss: "wss://..."
+      - name: "chainstack"
+        http: "https://..."
+        wss: "wss://..."
+    start_block: 27026739
+  SOL_MAINNET:
+    enabled: false
+    rpc_nodes:
+      - url: ""
+        origin: ""
+  SOL_DEVNET:
+    enabled: true
+    rpc_nodes:
+      - url: "https://api.devnet.solana.com"
+mpc:
+  event_initiator_pk_raw: ""
+  event_initiator_encrypted_pk_path: ""
+  event_initiator_encrypted_pk_password: ""
