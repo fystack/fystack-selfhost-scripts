@@ -1,0 +1,7 @@
+node0/
+node1/
+node2/
+peers.json
+event_initiator.key
+event_initiator.identity.json
+config.yaml

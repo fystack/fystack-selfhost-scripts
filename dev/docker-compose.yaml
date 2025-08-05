@@ -1,0 +1,221 @@
+services:
+  migrate:
+    image: docker.io/fystacklabs/apex-migrate:1.0.0
+    # build:
+    #   context: ..
+    #   dockerfile: deployments/migrate/Dockerfile
+    container_name: migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - ENVIRONMENT=dev
+    restart: "no"
+    networks:
+      - apex
+
+  apex:
+    # build:
+    #   context: ..
+    #   dockerfile: deployments/api/Dockerfile
+    image: docker.io/fystacklabs/apex:1.0.0
+    container_name: apex
+    ports:
+      - "8150:8150"
+    environment:
+      - NATS_URL=nats://nats-server:4222
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      nats-server:
+        condition: service_started
+      consul:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    networks:
+      - apex
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: custody
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: always
+    networks:
+      - apex
+
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_ARGS=--requirepass 6s9H5G9o4p5Fz25K9RyWd6eOryU8nQ
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: always
+    networks:
+      - apex
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: always
+    networks:
+      - apex
+
+  nats-server:
+    image: nats:latest
+    container_name: nats-server
+    command: -js --http_port 8222
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+      - "6222:6222"
+    tty: true
+    restart: always
+    networks:
+      - apex
+
+  consul:
+    image: consul:1.15.4
+    container_name: consul
+    ports:
+      - "8500:8500"
+      - "8601:8600/udp"
+    command: "agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0"
+    healthcheck:
+      test: ["CMD", "consul", "operator", "raft", "list-peers"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: always
+    networks:
+      - apex
+  ## MPCIUM
+  init:
+    # build:
+    #   context: ../..
+    #   dockerfile: deployments/mpcium-cli/Dockerfile
+    image: docker.io/fystacklabs/mpcium-cli:0.3.0
+    container_name: mpcium-init
+    volumes:
+      - ./node-configs/config.yaml:/app/config.yaml:ro
+      - ./node-configs/peers.json:/app/peers.json:ro
+    command: ["register-peers"]
+    depends_on:
+      - consul
+    restart: "no"
+    networks:
+      - apex
+
+  mpcium0:
+    # build:
+    #   context: ../..
+    #   dockerfile: deployments/mpcium/Dockerfile
+    image: docker.io/fystacklabs/mpcium:0.3.0
+    container_name: mpcium-node0
+    environment:
+      - NODE_NAME=node0
+    volumes:
+      - ./node-configs/node0/config.yaml:/app/config.yaml:ro
+      - ./node-configs/node0/identity:/app/identity:ro
+      - ./node-configs/node0/peers.json:/app/peers.json:ro
+      - mpcium-node0-db:/app/db
+      - mpcium-node0-backups:/app/backups
+    ports:
+      - "8080:8080"
+    depends_on:
+      - nats-server
+      - consul
+      - init
+    restart: unless-stopped
+    networks:
+      - apex
+
+  mpcium1:
+    # build:
+    #   context: ../..
+    #   dockerfile: deployments/mpcium/Dockerfile
+    image: docker.io/fystacklabs/mpcium:0.3.0
+    container_name: mpcium-node1
+    environment:
+      - NODE_NAME=node1
+    volumes:
+      - ./node-configs/node1/config.yaml:/app/config.yaml:ro
+      - ./node-configs/node1/identity:/app/identity:ro
+      - ./node-configs/node1/peers.json:/app/peers.json:ro
+      - mpcium-node1-db:/app/db
+      - mpcium-node1-backups:/app/backups
+    ports:
+      - "8081:8080"
+    depends_on:
+      - nats-server
+      - consul
+      - init
+    restart: unless-stopped
+    networks:
+      - apex
+
+  mpcium2:
+    # build:
+    #   context: ../..
+    #   dockerfile: deployments/mpcium/Dockerfile
+    image: docker.io/fystacklabs/mpcium:0.3.0
+    container_name: mpcium-node2
+    environment:
+      - NODE_NAME=node2
+    volumes:
+      - ./node-configs/node2/config.yaml:/app/config.yaml:ro
+      - ./node-configs/node2/identity:/app/identity:ro
+      - ./node-configs/node2/peers.json:/app/peers.json:ro
+      - mpcium-node2-db:/app/db
+      - mpcium-node2-backups:/app/backups
+    ports:
+      - "8082:8080"
+    depends_on:
+      - nats-server
+      - consul
+      - init
+    restart: unless-stopped
+    networks:
+      - apex
+volumes:
+  mpcium-node0-db:
+  mpcium-node0-backups:
+  mpcium-node1-db:
+  mpcium-node1-backups:
+  mpcium-node2-db:
+  mpcium-node2-backups:
+
+networks:
+  apex:
+    driver: bridge
