@@ -50,17 +50,27 @@ docker login -u fystacklabs
 
 When prompted, enter your password.
 
-### 2. Make Start Script Executable
+### 2. Copy config files from the template
 
-Make the start script executable:
+```
+cp ./dev/config.yaml.template ./dev/config.yaml
+cp ./dev/config.rescanner.yaml.template ./dev/config.rescanner.yaml
+```
+
+Open the `config.yaml` and `config.rescanner.yaml` files in your text editor and update the configuration values as needed.
+
+### 3. Make Start Script Executable
+
+Change to the root directory, make the start script executable.
+Make sure you are at the root folder of the project
 
 ```bash
 chmod +x ./start-all.sh
 ```
 
-### 3. Start the Fystack Cluster
+### 4. Start the Fystack Cluster
 
-Run the complete setup and startup script:
+Run the complete setup and startup script at the root folder of the project.
 
 ```bash
 ./start-all.sh
