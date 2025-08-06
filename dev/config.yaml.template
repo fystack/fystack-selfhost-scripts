@@ -71,6 +71,9 @@ price_providers:
   coinmarketcap:
     endpoint: "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
     api_key: ""
+  codex:
+    endpoint: "https://graph.defined.fi/graphql"
+    api_key: "eab56c4b18423bcd0c6d435d56beefcebfebd5ec"
 encryption_key: 82441c6785f53e02dbf97db9db2107ad # 16 bytes
 
 networks:
