@@ -387,16 +387,8 @@ main() {
                 SKIP_SETUP=true
                 shift
                 ;;
-            --skip-extract)
-                SKIP_EXTRACT=true
-                shift
-                ;;
             --wait-time)
                 WAIT_FOR_SERVICES="$2"
-                shift 2
-                ;;
-            --extract-timeout)
-                EXTRACT_TIMEOUT="$2"
                 shift 2
                 ;;
             -h|--help)
@@ -404,23 +396,18 @@ main() {
                 echo
                 echo "Options:"
                 echo "  --skip-setup              Skip MPCIUM node setup (use existing configs)"
-                echo "  --skip-extract            Skip encryption key extraction"
                 echo "  --wait-time SECONDS       Time to wait for services to start (default: 5)"
-                echo "  --extract-timeout SECONDS Timeout for encryption key extraction (default: 120)"
                 echo "  -h, --help                Show this help message"
                 echo
                 echo "Examples:"
                 echo "  $0                        # Complete setup and startup"
                 echo "  $0 --skip-setup           # Use existing configs, skip setup"
-                echo "  $0 --skip-extract         # Skip encryption key extraction"
                 echo "  $0 --wait-time 60         # Wait 60 seconds for services"
                 echo
                 echo "This script will:"
                 echo "  1. Generate MPCIUM node configurations (unless --skip-setup)"
                 echo "  2. Start infrastructure services (excluding MPCIUM nodes)"
-                echo "  3. Extract encryption key from hdkey service (one-time job, unless --skip-extract)"
-                echo "  4. Restart apex service with updated configuration (unless --skip-extract)"
-                echo "  5. Register peers and start MPCIUM nodes"
+                echo "  3. Register peers and start MPCIUM nodes"
                 exit 0
                 ;;
             *)

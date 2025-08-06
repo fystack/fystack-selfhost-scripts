@@ -20,7 +20,7 @@ services:
     # build:
     #   context: ..
     #   dockerfile: deployments/api/Dockerfile
-    image: docker.io/fystacklabs/apex:1.0.3
+    image: docker.io/fystacklabs/apex:1.0.5
     container_name: apex
     ports:
       - "8150:8150"
@@ -42,29 +42,6 @@ services:
       migrate:
         condition: service_completed_successfully
     restart: unless-stopped
-    networks:
-      - apex
-    volumes:
-      - shared-data:/app/shared
-      - ./config.yaml:/root/config.yaml:ro
-
-  hdkey:
-    image: docker.io/fystacklabs/hdkey:1.0.0
-    container_name: hdkey
-    environment:
-      - ENVIRONMENT=dev
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      mongo:
-        condition: service_healthy
-      nats-server:
-        condition: service_started
-      consul:
-        condition: service_healthy
-    restart: no
     networks:
       - apex
     volumes:
