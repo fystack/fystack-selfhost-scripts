@@ -1,6 +1,35 @@
-# MPCIUM Quick Start Guide
+# Fystack SaaS Quick Start Guide
 
-Welcome to MPCIUM! This guide will help you get your MPC (Multi-Party Computation) cluster up and running in minutes.
+Welcome to **Fystack**! This guide will help you get up and running quickly with our infrastructure, including:
+
+- **Apex**: The backend core API
+- **MPCIUM**: Self-hosted MPC nodes for secure signing and key management
+
+---
+
+## Overview
+
+Fystack is a modular, self-hosted MPC wallet infrastructure designed to help you integrate threshold cryptography securely and easily into your custody system. This guide will walk you through running the **backend API** and a **local MPCIUM cluster** in minutes.
+
+---
+
+## Components
+
+### 1. Apex (Backend Core)
+
+The API backend that handles:
+
+- Wallet and User management
+- Key orchestration and policy enforcement
+- Audit logging
+- API Keys
+- Transaction indexing
+
+### 2. MPCIUM (MPC Nodes)
+
+Each node runs part of the threshold signing/keygen logic (based on Binance's `tss-lib`) and communicates securely with Apex and otherpeers.
+
+---
 
 ## Prerequisites
 
