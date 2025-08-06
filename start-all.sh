@@ -6,8 +6,7 @@
 # This script orchestrates the entire setup and startup process:
 # 1. Run setup-nodes.sh to generate MPCIUM node configurations
 # 2. Start docker-compose.yaml services
-# 3. Extract encryption key from hdkey service
-# 4. Restart apex service with updated configuration
+# 3. Restart apex service with updated configuration
 # 
 # SECURITY: This script includes comprehensive sensitive data masking to prevent
 # exposure of encryption keys, passwords, API keys, and other sensitive information
@@ -28,13 +27,11 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEV_DIR="$SCRIPT_DIR/dev"
 SETUP_SCRIPT="$DEV_DIR/setup-nodes.sh"
-EXTRACT_SCRIPT="$DEV_DIR/extract-encryption-key.sh"
 REGISTER_SCRIPT="$DEV_DIR/register-peers.sh"
 DOCKER_COMPOSE_FILE="$DEV_DIR/docker-compose.yaml"
 
 # Configuration
 WAIT_FOR_SERVICES=${WAIT_FOR_SERVICES:-5}   # Time to wait for services to start
-EXTRACT_TIMEOUT=${EXTRACT_TIMEOUT:-120}      # Timeout for encryption key extraction
 
 # Sensitive data masking function
 mask_sensitive_data() {
@@ -183,8 +180,7 @@ print_banner() {
     echo "║  This script orchestrates the entire setup and startup process:                 ║"
     echo "║  1. Generate MPCIUM node configurations                                          ║"
     echo "║  2. Start Docker Compose services                                                ║"
-    echo "║  3. Extract encryption key from hdkey service (one-time job)                    ║"
-    echo "║  4. Restart apex service with updated configuration                              ║"
+    echo "║  3. Register peers and start MPCIUM nodes                                        ║"
     echo "╚══════════════════════════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
     echo
@@ -196,7 +192,7 @@ check_prerequisites() {
     # Check if required scripts exist
     local required_files=(
         "$SETUP_SCRIPT:setup-nodes.sh"
-        "$EXTRACT_SCRIPT:extract-encryption-key.sh"
+        "$REGISTER_SCRIPT:register-peers.sh"
         "$DOCKER_COMPOSE_FILE:docker-compose.yaml"
     )
     
@@ -225,7 +221,6 @@ check_prerequisites() {
     
     # Make scripts executable
     make_executable "$SETUP_SCRIPT" "setup-nodes.sh"
-    make_executable "$EXTRACT_SCRIPT" "extract-encryption-key.sh"
     make_executable "$REGISTER_SCRIPT" "register-peers.sh"
     
     log_success "Prerequisites check passed"
@@ -254,7 +249,7 @@ start_docker_services() {
     
     execute_command \
         "Starting infrastructure services with docker compose..." \
-        "docker compose up -d migrate apex hdkey rescanner postgres redis mongo nats-server consul" \
+        "docker compose up -d migrate apex rescanner postgres redis mongo nats-server consul" \
         "Infrastructure services started successfully" \
         "Failed to start infrastructure services"
     
@@ -264,27 +259,12 @@ start_docker_services() {
     # Check if key services are running
     log_info "Checking service status..."
     
-    check_service_completed "hdkey" "hdkey service has completed successfully" "hdkey service exit code"
     check_service_running "apex" "apex service is running" "apex service is not running yet"
     check_service_running "consul" "consul service is running" "consul service is not running yet"
 }
 
-extract_encryption_key() {
-    log_info "Step 3: Extracting encryption key from hdkey service..."
-    
-    cd "$DEV_DIR"
-    
-    execute_command \
-        "Running extract-encryption-key.sh with timeout $EXTRACT_TIMEOUT seconds..." \
-        "$EXTRACT_SCRIPT --timeout $EXTRACT_TIMEOUT" \
-        "Encryption key extracted and updated successfully" \
-        "Failed to extract encryption key"
-    
-    log_warning "You may need to manually run: ./extract-encryption-key.sh"
-}
-
 register_peers_and_start_mpcium() {
-    log_info "Step 4: Registering peers and starting MPCIUM nodes..."
+    log_info "Step 3: Registering peers and starting MPCIUM nodes..."
     
     cd "$DEV_DIR"
     
@@ -310,7 +290,7 @@ register_peers_and_start_mpcium() {
 }
 
 restart_apex_service() {
-    log_info "Step 5: Restarting apex service with updated configuration..."
+    log_info "Step 4: Restarting apex service with updated configuration..."
     
     cd "$DEV_DIR"
     
@@ -344,9 +324,7 @@ print_summary() {
     log_info "📋 Summary of completed steps:"
     echo "  ✅ 1. MPCIUM node configurations generated"
     echo "  ✅ 2. Infrastructure services started"
-    echo "  ✅ 3. Encryption key extracted and configured"
-    echo "  ✅ 4. Apex service restarted with updated configuration"
-    echo "  ✅ 5. Peers registered and MPCIUM nodes started"
+    echo "  ✅ 3. Peers registered and MPCIUM nodes started"
     echo
     log_info "🌐 Services available:"
     echo "  - Apex API: http://localhost:8150"
@@ -363,7 +341,7 @@ print_summary() {
     local docker_status=$(docker compose ps)
     mask_output "$docker_status"
     echo
-    log_warning "🔐 Important: Make sure to backup your encryption keys and configurations!"
+    log_warning "🔐 Important: Make sure to backup your configurations!"
     echo
     log_info "📝 Useful commands:"
     echo "  - View logs: docker compose logs -f [service_name]"
@@ -427,15 +405,6 @@ main() {
     fi
     
     start_docker_services
-    
-    if [ "$SKIP_EXTRACT" != "true" ]; then
-        extract_encryption_key
-        log_info "Encryption key extraction completed, proceeding to restart apex service..."
-        restart_apex_service
-    else
-        log_info "Skipping encryption key extraction and apex restart"
-    fi
-    
     register_peers_and_start_mpcium
     
     print_summary
