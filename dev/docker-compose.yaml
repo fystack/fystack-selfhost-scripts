@@ -31,6 +31,7 @@ services:
       - ENVIRONMENT=dev
       - NATS_URL=nats://nats-server:4222
       - CONSUL_ADDRESS=consul:8500
+      - ENCRYPTION_KEY=82441c6785f53e02dbf97db9db2107ad
     depends_on:
       postgres:
         condition: service_healthy
