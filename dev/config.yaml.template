@@ -5,7 +5,7 @@ production_mode: false
 consul:
   address: "consul:8500"
 nats:
-  url: "nats://nats-server:4222"
+  url: "nats://nats-server_fystack:4222"
 db:
   postgres:
     host: "postgres"

@@ -3,7 +3,7 @@ redis:
   password: "6s9H5G9o4p5Fz25K9RyWd6eOryU8nQ"
 
 nats:
-  url: nats://nats-server:4222
+  url: nats://nats-server_fystack:4222
   password: ""
 
 consul:
