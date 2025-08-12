@@ -46,6 +46,8 @@ jwt:
 email:
   api_key: "<API_KEY>"
   api_secret: "<API_SECRET>"
+  sender_name: "Fystack" # Replace with your company name
+  sender_email: "noreply@fystack.io" # Replace with your email
 
 cors:
   allow_origins: http://localhost:5174
