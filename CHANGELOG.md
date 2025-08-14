@@ -6,8 +6,7 @@ Add `sender_name`, `sender_email` to `config.yaml`
 
 ```
 email:
-  api_key: ""
-  api_secret: ""
+  resend_api_key: ""
   sender_name: "Fystack"
   sender_email: "noreply@fystack.io"
 ```

@@ -44,8 +44,7 @@ jwt:
   secret: a9cb1255ea2bb890cc79c12a4fb93499
 
 email:
-  api_key: "<API_KEY>"
-  api_secret: "<API_SECRET>"
+  resend_api_key: "<API_KEY>"
   sender_name: "Fystack" # Replace with your company name
   sender_email: "noreply@fystack.io" # Replace with your email
 
