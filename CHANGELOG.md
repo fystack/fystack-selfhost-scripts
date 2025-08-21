@@ -18,3 +18,12 @@ docker compose pull migrate apex
 docker compose up -d --no-deps --force-recreate migrate
 docker compose up -d --no-deps --force-recreate apex
 ```
+
+## v0.1.6
+
+- remove `api_key`, `api_secret` from `config.yaml`
+
+```
+email:
+  resend_api_key: "<API_KEY>"
+```

@@ -1,6 +1,6 @@
 services:
   migrate:
-    image: docker.io/fystacklabs/apex-migrate:1.0.2
+    image: docker.io/fystacklabs/apex-migrate:1.0.3
     # build:
     #   context: ..
     #   dockerfile: deployments/migrate/Dockerfile
@@ -23,7 +23,7 @@ services:
     # build:
     #   context: ..
     #   dockerfile: deployments/api/Dockerfile
-    image: docker.io/fystacklabs/apex:1.0.10
+    image: docker.io/fystacklabs/apex:1.0.11
     container_name: apex
     ports:
       - "8150:8150"
