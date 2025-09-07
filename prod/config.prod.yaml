@@ -1,0 +1,152 @@
+name: Apex API
+version: 0.0.4
+environment: production
+production_mode: true
+db:
+  postgres:
+    host: "postgres"
+    user: "postgres"
+    dbname: "custody"
+    port: 5432
+    password: "mysecretpassword"
+    sslmode: "require" # empty if no ssl
+  mongo:
+    dsn: "mongodb://admin:password@mongo:27017"
+    database: "apex"
+
+cookie:
+  same_site: strict
+
+app:
+  root_url: https://app.fystack.io # Replace app.fystac.io with your domain
+  sign_in_url: https://app.fystack.io/auth
+  sign_up_url: https://app.fystack.io/auth/sign-up
+  workspace_url: http://app.fystack.io/auth/workspace
+  checkout_url: https://app.fystack.io/checkout
+  reset_url: https://app.fystack.io/auth/reset-password
+  email_verification_url: https://app.fystack.io/auth/verify-email
+  cli_auth_url: https://app.fystack.io/auth/cli
+
+oauth2:
+  google:
+    client_id: ""
+    client_secret: ""
+    callback_url: "https://api.fystack.io/api/v1/authentication/google/callback" # replace api.fystack.io with your api domain
+
+redis:
+  address: "redis:6379"
+  password: ""
+
+consul:
+  address: "https://consul.fystack.io"
+  token: ""
+  username: "" # https auth, skip if not set
+  password: "" # https auth, skip if not set
+
+nats:
+  url: "tls://nats-host.fystack.io:4223"
+  username: "apex"
+  password: ""
+  tls:
+    client_cert: "./certs/client-cert.pem"
+    client_key: "./certs/client-key.pem"
+    ca_cert: "./certs/rootCA.pem"
+
+jwt:
+  secret: "" # openssl rand -hex 16
+
+email:
+  resend_api_key: ""
+  sender_name: "Fystack"
+  sender_email: "noreply@fystack.io"
+
+cors:
+  allow_origins: https//app.fystack.io
+
+port: 8150
+
+price_refresh_period: 25m
+price_cache_duration: 30m # if no refresh then the price is still available for at least 5 more minutes
+gas_data_cache_duration: 10s
+
+wallet:
+  mpc:
+    mpcium_version: 0.3.2
+    tss_lib_version: 2.0.0
+    threshold: 2
+  standard:
+    version: 1.0.0
+
+price_providers:
+  dexscreener:
+    endpoint: "https://api.dexscreener.com/latest/dex/search"
+  coinmarketcap:
+    endpoint: "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+    api_key: ""
+  codex:
+    endpoint: "https://graph.defined.fi/graphql"
+    api_key: "bd3ea5428ebc040bd71008d88e2f4ea0d2683981"
+
+networks:
+  ETHEREUM_MAINNET:
+    enabled: true
+    providers:
+      - name: "alchemy://"
+        http: "https://"
+        wss: "wss://"
+      - name: "tenderly"
+        http: ""
+        wss: ""
+  POLYGON_MAINNET:
+    enabled: true
+    providers:
+      - name: "alchemy"
+        http: "https://"
+        wss: "wss://"
+      - name: "tenderly"
+        http: ""
+        wss: ""
+    start_block: 62126266
+  BASE_MAINNET:
+    enabled: false
+    providers:
+      - name: "alchemy"
+        http: "https://"
+        wss: "wss://"
+  BSC_MAINNET:
+    enabled: true
+    providers:
+      - name: "quicknode"
+        http: "https://tame-frequent-fog.bsc.quiknode.pro/774f0081965a0e9378059e0622c2a584fb8859f2"
+        wss: "wss://bsc-rpc.publicnode.com"
+  SOL_MAINNET:
+    enabled: false
+    rescanner_enabled: false
+    rpc_stable:
+      url: https://mainnet.helius-rpc.com/?api-key=your_api_key
+      origin: your_original
+    rpc_nodes:
+      - url: "https://"
+
+address_risk_providers:
+  webacy:
+    api_key: "" # Get free api key here: https://developers.webacy.co/
+
+secret_store:
+  type: "aws"
+  config:
+    region: ap-southeast-1
+    prefix: prod
+  memguard_enclave:
+    enabled: true
+
+mpc:
+  signer:
+    type: "aws_kms"
+    aws_kms:
+      region: "ap-southeast-1"
+      key_id: "299cfc00-890a-4cd4-a0f5-7c51217167e7" # replace key kms id mpc_event_signer
+
+system_admins: # System admins will be able to configure networks, assets in the portal
+  - "devteam@fystack.io" # Replace with your team email
+  - "thi@fystack.io"

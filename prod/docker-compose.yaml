@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  nats-prod:
+    image: nats:alpine
+    container_name: nats-apex-production
+    user: "1001:1001" # Non-root user
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    ports:
+      - "4223:4222" # NATS client port, expose on 4223
+      - "127.0.0.1:8223:8222" # Monitoring endpoint, expose on localhost
+      - "127.0.0.1:6223:6222" # Cluster port, expose on localhost
+    volumes:
+      - ./certs/:/etc/nats/certs
+    command:
+      [
+        "nats-server",
+        "-js",
+        "--http_port",
+        "8222",
+        "--user",
+        "apex",
+        "--pass",
+        "$2a$11$2Er0oPbbN2JsPbSbvZi4AOyrXGkFBRib/fAj6wtV.Aw8KFJgtEwlq",
+        "--tlsverify",
+        "--tlscert=/etc/nats/certs/server-cert.pem",
+        "--tlskey=/etc/nats/certs/server-key.pem",
+        "--tlscacert=/etc/nats/certs/rootCA.pem",
+      ]
+    restart: always
+    tty: true
+
+  mongo-prod:
+    image: mongo:latest
+    container_name: mongo-apex-production
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: "3!Z5c?*r7x?;"
+    ports:
+      - "127.0.0.1:27017:27017" # Expose on localhost
