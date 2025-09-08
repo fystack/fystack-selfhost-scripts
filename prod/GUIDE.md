@@ -90,12 +90,15 @@ htpasswd -bnBC 12 "" "your_password" | tr -d ':\n'
 
 This outputs a bcrypt hash that you’ll use in the Docker Compose file.
 
-#### Example Docker Compose Snippet
+#### Update nats.conf Password
+
+Update the password hash in `nats.conf`:
 
 ```
-"--pass",
-"$2a$11$2Er0oPbbN2JsPbSbvZi4AOyrXGkFBRib/fAj6wtV.Aw8KFJgtEwlq", // change this value
-
+authorization {
+    user: "apex"
+    password: "$2a$11$2Er0oPbbN2JsPbSbvZi4AOyrXGkFBRib/fAj6wtV.Aw8KFJgtEwlq" // change this value
+}
 ```
 
 Reference: https://docs.nats.io/running-a-nats-service/configuration/securing_nats/auth_intro/username_password
