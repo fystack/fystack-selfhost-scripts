@@ -39,14 +39,14 @@ This generates:
 ### 2. Generate Client Certificates (mTLS)
 
 ```
-mkcert -cert-file client-cert.pem -key-file client-key.pem <CLIENT_HOSTNAME>
+mkcert -client -cert-file client-cert.pem -key-file client-key.pem <CLIENT_HOSTNAME>
 ```
 
 Example:
 
 ```
 
-mkcert -cert-file client-cert.pem -key-file client-key.pem host1.example.com
+mkcert -client -cert-file client-cert.pem -key-file client-key.pem host1.example.com
 ```
 
 IP/Hostnames Are Not Needed for Clients
