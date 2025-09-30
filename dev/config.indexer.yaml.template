@@ -1,0 +1,80 @@
+env: "development"
+version: "1.0.0"
+# Global defaults - applies to all chains unless overridden
+defaults:
+  from_latest: true
+  poll_interval: "5s"
+  reorg_rollback_window: 20
+  client:
+    timeout: "20s"
+    max_retries: 3
+    retry_delay: "5s"
+  throttle:
+    rps: 8
+    burst: 16
+    batch_size: 100
+    concurrency: 3
+
+chains:
+  tron_testnet:
+    network_id: "bc75c4b8-f7b6-4f2f-a79a-5d3a7084f0c1"
+    internal_code: "TRON_SHASTA_TESTNET"
+    type: "tron"
+    start_block: 58083393
+    poll_interval: "8s"
+    nodes:
+      - url: "https://api.shasta.trongrid.io/"
+    client:
+      max_retries: 5
+      retry_delay: "10s"
+    throttle:
+      rps: 5
+      burst: 8
+
+# Infrastructure services
+services:
+  port: 8080
+  worker:
+    manual:
+      enabled: false
+    catchup:
+      enabled: false
+    rescanner:
+      enabled: true
+    regular:
+      enabled: true
+
+  nats:
+    url: "nats://nats-server_fystack:4222"
+
+  # database: # Optional - comment out to disable database connection
+  #   url: "postgres://postgres:mysecretpassword@localhost:5432/custody"
+  # database:
+  #   url: "postgres://postgres:mysecretpassword@localhost:5432/custody"
+
+  redis:
+    url: "redis:6379"
+    password: "6s9H5G9o4p5Fz25K9RyWd6eOryU8nQ"
+
+  kvstore:
+    type: "consul"
+    consul:
+      scheme: "http"
+      address: "consul:8500"
+      folder: ""
+      token: ""
+      # http_auth:  # uncomment if needed
+      #   username: ""
+      #   password: ""
+
+  bloomfilter:
+    type: "redis"
+    wallet_address_repo: "wallet_address"
+    batch_size: 1000
+    redis:
+      key_prefix: "wallet_bloom"
+      error_rate: 0.01
+      capacity: 1000000
+    in_memory: # alternative config
+      expected_items: 1000000
+      false_positive_rate: 0.01

@@ -103,7 +103,52 @@ networks:
     enabled: true
     rpc_nodes:
       - url: "https://api.devnet.solana.com"
+  TRON_SHASTA_TESTNET:
+    enabled: true
+    rpc_nodes:
+      - url: "https://api.shasta.trongrid.io/"
 mpc:
-  event_initiator_pk_raw: "ef8e3b8f43ef46a1433d71b8906ee80bb16c672a0545dd093b86fe44173c2085"
-  event_initiator_encrypted_pk_path: ""
-  event_initiator_encrypted_pk_password: ""
+  signer:
+    type: "local" # Options: "local" or "kms"
+    local:
+      pk_raw: ""
+      encrypted_pk_path: "event_initiator.key.age"
+      encrypted_pk_password: ""
+
+secret_store:
+  type: "config"
+  # type: "aws"
+  config:
+    region: ap-southeast-1
+    prefix: ""
+    endpoint: http://localhost:4566
+    access_key_id: test
+    secret_access_key: test
+  memguard_enclave:
+    enabled: true
+    encrypt_critical: true
+
+address_risk_providers:
+  webacy:
+    api_key: "" # Can leave empty
+
+system_admins:
+  - "devteam@fystack.io"
+
+logging:
+  mode: "stdout" # Options: "file", "stdout", "both"
+  format: "json" # Options: "json", "pretty"
+  blockchain:
+    enabled: true
+    stdout: true
+  api:
+    enabled: true
+    stdout: true
+  sweeper:
+    enabled: true
+    stdout: true
+
+telegram:
+  bot_token: "<YOUR TOKEN>"
+  long_polling: true
+  bot_name: "<Your bot name, starting with the @ symbol>"

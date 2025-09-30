@@ -1,6 +1,6 @@
 services:
   migrate:
-    image: docker.io/fystacklabs/apex-migrate:1.0.3
+    image: docker.io/fystacklabs/apex-migrate:1.0.6
     # build:
     #   context: ..
     #   dockerfile: deployments/migrate/Dockerfile
@@ -23,7 +23,7 @@ services:
     # build:
     #   context: ..
     #   dockerfile: deployments/api/Dockerfile
-    image: docker.io/fystacklabs/apex:1.0.11
+    image: docker.io/fystacklabs/apex:1.0.24
     container_name: apex
     ports:
       - "8150:8150"
@@ -50,7 +50,7 @@ services:
       - apex
     volumes:
       - shared-data:/app/shared
-      - ./config.yaml:/root/config.yaml:ro
+      - ./config.yaml:/app/config.yaml:ro
 
   rescanner:
     image: docker.io/fystacklabs/rescanner:1.0.0
@@ -63,6 +63,18 @@ services:
     volumes:
       - shared-data:/app/shared
       - ./config.rescanner.yaml:/root/config.rescanner.yaml:ro
+
+  multichain-indexer:
+    image: docker.io/fystacklabs/multichain-indexer:1.0.0
+    container_name: multichain-indexer
+    command: ["index", "--chains=${CHAINS}", "--debug", "--catchup", "--manual"]
+    environment:
+      - CHAINS=tron_testnet
+    restart: unless-stopped
+    networks:
+      - apex
+    volumes:
+      - ./config.indexer.yaml:/app/configs/config.yaml:ro
 
   postgres:
     image: postgres

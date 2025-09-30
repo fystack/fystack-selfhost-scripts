@@ -247,13 +247,13 @@ update_main_config_with_private_key() {
         exit 1
     fi
     
-    # Update the main config.yaml with the private key
-    if grep -q "event_initiator_pk_raw:" "$MAIN_CONFIG_FILE"; then
-        # Replace the existing value
-        sed -i "s/event_initiator_pk_raw: \".*\"/event_initiator_pk_raw: \"$PRIVATE_KEY\"/" "$MAIN_CONFIG_FILE"
-        log_success "Updated event_initiator_pk_raw in main config.yaml"
+    # Update the main config.yaml with the private key in the new MPC structure
+    if grep -q "pk_raw:" "$MAIN_CONFIG_FILE"; then
+        # Replace any existing value in the nested mpc.signer.local.pk_raw structure
+        sed -i "s/pk_raw: \".*\"/pk_raw: \"$PRIVATE_KEY\"/" "$MAIN_CONFIG_FILE"
+        log_success "Updated mpc.signer.local.pk_raw in main config.yaml"
     else
-        log_error "event_initiator_pk_raw field not found in main config.yaml"
+        log_error "mpc.signer.local.pk_raw field not found in main config.yaml"
         exit 1
     fi
     
