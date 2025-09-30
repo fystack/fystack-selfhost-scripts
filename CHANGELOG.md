@@ -80,7 +80,7 @@ secret_store:
 
 address_risk_providers:
   webacy:
-    api_key: "" # Get free api key here: https://developers.webacy.co/
+    api_key: "" # Optional can leave empty, Get free api key here: https://developers.webacy.co/, can
 
 system_admins:
   - "devteam@fystack.io"

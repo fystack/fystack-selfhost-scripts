@@ -133,7 +133,8 @@ address_risk_providers:
     api_key: "" # Can leave empty
 
 system_admins:
-  - "devteam@fystack.io"
+  - "mail1@gmail.com" # Replace with system admin email(s)
+  - "mail2@gmail.com"
 
 logging:
   mode: "stdout" # Options: "file", "stdout", "both"
