@@ -119,7 +119,13 @@ Services started include:
 - **3 MPC nodes** (node0, node1, node2)
 - **Automatic peer registration**
 
-### 4. Verify the Setup
+### 5. Visit the Fystack Portal
+
+Once all services are running, you can access the Fystack portal at [http://localhost:8015](http://localhost:8015)
+
+![Fystack Portal](images/fystack-portal.png)
+
+### 6. Verify the Setup
 
 Check that all services are running:
 
