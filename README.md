@@ -91,7 +91,7 @@ cp ./dev/config.rescanner.yaml.template ./dev/config.rescanner.yaml
 cp ./dev/config.indexer.yaml.template ./dev/config.indexer.yaml
 ```
 
-Open the `config.yaml`, `config.rescanner.yaml`, and `config.indexer.yaml` files in your text editor and update the configuration values as needed.
+> **Important:** You don't need to update all configuration values. The only mandatory configuration is the **CoinMarketCap API key**. Visit https://pro.coinmarketcap.com/login/ to create a CoinMarketCap API key, then add it to `config.yaml` under the `price_providers` configuration.
 
 ### 3. Make Start Script Executable
 

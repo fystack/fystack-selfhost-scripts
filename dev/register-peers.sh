@@ -84,12 +84,13 @@ register_peers() {
     cp config.yaml config.local.yaml
     
     # Update the temporary config to use localhost instead of Docker service names
-    sed -i 's/nats:\/\/nats-server:4222/nats:\/\/localhost:4222/g' config.local.yaml
-    sed -i 's/consul:8500/localhost:8500/g' config.local.yaml
-    
+    # Note: Using the host-mapped ports (4223 for NATS, 8501 for Consul)
+    sed -i 's/nats:\/\/nats-server:4222/nats:\/\/localhost:4223/g' config.local.yaml
+    sed -i 's/consul:8500/localhost:8501/g' config.local.yaml
+
     log_info "Using localhost addresses for CLI operations:"
-    echo "  - NATS: nats://localhost:4222"
-    echo "  - Consul: localhost:8500"
+    echo "  - NATS: nats://localhost:4223"
+    echo "  - Consul: localhost:8501"
     
     # Temporarily replace the original config with the local version
     mv config.yaml config.docker.yaml
