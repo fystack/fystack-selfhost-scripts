@@ -85,7 +85,7 @@ price_providers:
     api_key: ""
   codex:
     endpoint: "https://graph.defined.fi/graphql"
-    api_key: "bd3ea5428ebc040bd71008d88e2f4ea0d2683981"
+    api_key: ""
 
 networks:
   ETHEREUM_MAINNET:
@@ -117,7 +117,7 @@ networks:
     enabled: true
     providers:
       - name: "quicknode"
-        http: "https://tame-frequent-fog.bsc.quiknode.pro/774f0081965a0e9378059e0622c2a584fb8859f2"
+        http: "https://tame-frequent-fog.bsc.quiknode.pro/<API_KEY>"
         wss: "wss://bsc-rpc.publicnode.com"
   SOL_MAINNET:
     enabled: false
@@ -148,5 +148,4 @@ mpc:
       key_id: "299cfc00-890a-4cd4-a0f5-7c51217167e7" # replace key kms id mpc_event_signer
 
 system_admins: # System admins will be able to configure networks, assets in the portal
-  - "devteam@fystack.io" # Replace with your team email
-  - "thi@fystack.io"
+  - "youremail@domain.io" # Replace with your team email

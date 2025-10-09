@@ -9,7 +9,7 @@ services:
     cap_drop:
       - ALL
     ports:
-      - "4223:4222" # NATS client port, exposed on 4223
+      - "127.0.0.1:4223:4222" # NATS client port, exposed on 4223
       - "127.0.0.1:8223:8222" # Monitoring endpoint, exposed on localhost
       - "127.0.0.1:6223:6222" # Cluster port, exposed on localhost
     volumes:
@@ -29,9 +29,9 @@ services:
       - ALL
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: "3!Z5c?*r7x?;"
+      MONGO_INITDB_ROOT_PASSWORD: ""
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongo_data:/data/db
 
