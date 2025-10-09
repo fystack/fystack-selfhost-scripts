@@ -9,6 +9,8 @@ Welcome to **Fystack**! This guide will help you get up and running quickly with
 
 ## Overview
 
+![Fystack Sandbox](images/fystack-sandbox.png)
+
 Fystack is a modular, self-hosted MPC wallet infrastructure designed to help you integrate threshold cryptography securely and easily into your custody system.
 
 **This quick start guide helps developers and teams bootstrap a complete Fystack testnet environment with a single shell script command (`./fystack-ignite.sh`).** By setting up Fystack locally, you can:
@@ -22,6 +24,8 @@ This guide will walk you through running the **backend API** and a **local MPCIU
 ---
 
 ## Components
+
+![Fystack Architecture](images/fystack-achitecture.drawio.png)
 
 ### 1. Apex (Backend Core)
 
