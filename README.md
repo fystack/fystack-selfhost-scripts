@@ -25,7 +25,7 @@ This guide will walk you through running the **backend API** and a **local MPCIU
 
 ## Components
 
-![Fystack Architecture](images/fystack-achitecture.drawio.png)
+![Fystack Architecture](images/fystack-achitecture.png)
 
 ### 1. Apex (Backend Core)
 
@@ -147,22 +147,22 @@ Your Fystack cluster includes:
 
 > **Note:** PostgreSQL, Redis, MongoDB, NATS, and Consul ports have been increased by 1 to avoid conflicts with your development environment. All ports are bound to 127.0.0.1 (localhost) for security.
 
-| Service                  | Purpose                                        | Port  |
-| ------------------------ | ---------------------------------------------- | ----- |
-| **NATS Server**          | Messaging layer for node communication         | 4223  |
-| **Consul**               | Service discovery and health checks            | 8501  |
-| **PostgreSQL**           | Database for custody operations                | 5433  |
-| **Redis**                | In-memory data store                           | 6380  |
-| **MongoDB**              | Document database                              | 27018 |
-| **Apex API**             | Main API service                               | 8150  |
-| **Migrate**              | Database migration service                     | -     |
-| **Rescanner**            | Reindexes block gaps for complete data         | -     |
-| **Multichain Indexer**   | Indexes blockchain transactions in real-time   | -     |
-| **Fystack UI Community** | Community web interface for Fystack            | 8015  |
-| **MPC Node 0**           | First MPC node                                 | 8080  |
-| **MPC Node 1**           | Second MPC node                                | 8081  |
-| **MPC Node 2**           | Third MPC node                                 | 8082  |
-| **MPCIUM Init**          | Peer registration service                      | -     |
+| Service                  | Purpose                                      | Port  |
+| ------------------------ | -------------------------------------------- | ----- |
+| **NATS Server**          | Messaging layer for node communication       | 4223  |
+| **Consul**               | Service discovery and health checks          | 8501  |
+| **PostgreSQL**           | Database for custody operations              | 5433  |
+| **Redis**                | In-memory data store                         | 6380  |
+| **MongoDB**              | Document database                            | 27018 |
+| **Apex API**             | Main API service                             | 8150  |
+| **Migrate**              | Database migration service                   | -     |
+| **Rescanner**            | Reindexes block gaps for complete data       | -     |
+| **Multichain Indexer**   | Indexes blockchain transactions in real-time | -     |
+| **Fystack UI Community** | Community web interface for Fystack          | 8015  |
+| **MPC Node 0**           | First MPC node                               | 8080  |
+| **MPC Node 1**           | Second MPC node                              | 8081  |
+| **MPC Node 2**           | Third MPC node                               | 8082  |
+| **MPCIUM Init**          | Peer registration service                    | -     |
 
 ## E2E Testing
 
