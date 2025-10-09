@@ -1,4 +1,4 @@
-# Fystack SaaS Quick Start Guide
+# Fystack Self-host Quick Start Guide
 
 Welcome to **Fystack**! This guide will help you get up and running quickly with our infrastructure, including:
 
@@ -9,7 +9,15 @@ Welcome to **Fystack**! This guide will help you get up and running quickly with
 
 ## Overview
 
-Fystack is a modular, self-hosted MPC wallet infrastructure designed to help you integrate threshold cryptography securely and easily into your custody system. This guide will walk you through running the **backend API** and a **local MPCIUM cluster** in minutes.
+Fystack is a modular, self-hosted MPC wallet infrastructure designed to help you integrate threshold cryptography securely and easily into your custody system.
+
+**This quick start guide helps developers and teams bootstrap a complete Fystack testnet environment with a single shell script command (`./start-all.sh`).** By setting up Fystack locally, you can:
+
+- **Understand the Fystack architecture** hands-on with all core components running
+- **Set up your local development environment quickly** without manual service configuration
+- **Test and explore** MPC wallet features on testnet before production deployment
+
+This guide will walk you through running the **backend API** and a **local MPCIUM cluster** in minutes.
 
 ---
 
@@ -28,6 +36,14 @@ The API backend that handles:
 ### 2. MPCIUM (MPC Nodes)
 
 Each node runs part of the threshold signing/keygen logic (based on Binance's `tss-lib`) and communicates securely with Apex and otherpeers.
+
+### 3. Multichain Indexer
+
+Indexes the latest blocks from the blockchain in real-time, keeping track of on-chain transactions and events relevant to your wallets.
+
+### 4. Rescanner
+
+Reindexes block gaps to ensure complete blockchain data coverage, filling in any missing blocks or transactions that may have been skipped during initial indexing.
 
 ---
 
@@ -55,9 +71,10 @@ When prompted, enter your password.
 ```
 cp ./dev/config.yaml.template ./dev/config.yaml
 cp ./dev/config.rescanner.yaml.template ./dev/config.rescanner.yaml
+cp ./dev/config.indexer.yaml.template ./dev/config.indexer.yaml
 ```
 
-Open the `config.yaml` and `config.rescanner.yaml` files in your text editor and update the configuration values as needed.
+Open the `config.yaml`, `config.rescanner.yaml`, and `config.indexer.yaml` files in your text editor and update the configuration values as needed.
 
 ### 3. Make Start Script Executable
 

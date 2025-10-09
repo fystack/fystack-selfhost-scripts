@@ -1,6 +1,6 @@
 services:
   migrate:
-    image: docker.io/fystacklabs/apex-migrate:1.0.6
+    image: docker.io/fystacklabs/apex-migrate:1.0.8
     # build:
     #   context: ..
     #   dockerfile: deployments/migrate/Dockerfile
@@ -23,7 +23,7 @@ services:
     # build:
     #   context: ..
     #   dockerfile: deployments/api/Dockerfile
-    image: docker.io/fystacklabs/apex:1.0.24
+    image: docker.io/fystacklabs/apex:1.0.28
     container_name: apex
     ports:
       - "8150:8150"
@@ -31,7 +31,7 @@ services:
       - ENVIRONMENT=dev
       - NATS_URL=nats://nats-server:4222
       - CONSUL_ADDRESS=consul:8500
-      - ENCRYPTION_KEY=82441c6785f53e02dbf97db9db2107ad
+      - ENCRYPTION_KEY=82441c6785f53e02dbf97db9db2107ad # can replace with your ENCRYPTION_KEY
     depends_on:
       postgres:
         condition: service_healthy
@@ -75,6 +75,15 @@ services:
       - apex
     volumes:
       - ./config.indexer.yaml:/app/configs/config.yaml:ro
+
+  fystack-ui-community:
+    image: docker.io/fystacklabs/fystack-ui-community:1.0.0
+    container_name: fystack-ui-community
+    ports:
+      - "8015:8080"
+    restart: unless-stopped
+    networks:
+      - apex
 
   postgres:
     image: postgres

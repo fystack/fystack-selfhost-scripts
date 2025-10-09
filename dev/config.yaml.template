@@ -32,8 +32,8 @@ app:
   cli_auth_url: http://localhost:5174/auth/cli
 oauth2:
   google:
-    client_id: "<CLIENT_ID>"
-    client_secret: "<CLIENT_SECRET>"
+    client_id: "123456789012-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com" # fake value, replace ith your value
+    client_secret: "GOCSPX-4fV8k9xYtQm2PZs1uHnR6" # fake value
     callback_url: "http://localhost:8150/api/v1/authentication/google/callback"
 
 redis:
@@ -49,7 +49,7 @@ email:
   sender_email: "noreply@fystack.io" # Replace with your email
 
 cors:
-  allow_origins: http://localhost:5174
+  allow_origins: http://localhost:8015
   # allow_origins: "*"
 
 port: 8150
@@ -74,31 +74,23 @@ price_providers:
     api_key: ""
   codex:
     endpoint: "https://graph.defined.fi/graphql"
-    api_key: "eab56c4b18423bcd0c6d435d56beefcebfebd5ec"
-encryption_key: 82441c6785f53e02dbf97db9db2107ad # 16 bytes
+    api_key: ""
+
+encryption_key: 82441c6785f53e02dbf97db9db2107ad # 16 bytes, replace with your value
 
 networks:
   ETHER_SEPOLIA_TESTNET:
     enabled: true
     providers:
-      - name: "alchemy"
-        http: "https://"
-        wss: "wss://"
-    start_block: 5085291
-  BASE_MAINNET:
-    enabled: false
+      - name: "publicnode"
+        http: "https://ethereum-sepolia-rpc.publicnode.com"
+        wss: "wss://ethereum-sepolia-rpc.publicnode.com"
+  BASE_SEPOLIA_TESTNET:
+    enabled: true
     providers:
-      - name: "chainstack"
-        http: "https://base-mainnet.core.chainstack.com/<APIKEY>"
-        wss: "wss://base-mainnet.core.chainstack.com/<APIKEY>"
-      - name: "infura"
-        http: "https://base-mainnet.infura.io/v3/<APIKEY>"
-        wss: "wss://base-mainnet.infura.io/ws/v3/<APIKEY>"
-  SOL_MAINNET:
-    enabled: false
-    rpc_nodes:
-      - url: "https://rpc.ironforge.network/mainnet?apiKey=<APIKEy>"
-        origin: ""
+      - name: "publicnode"
+        http: "https://base-sepolia-rpc.publicnode.com"
+        wss: "wss://base-sepolia-rpc.publicnode.com"
   SOL_DEVNET:
     enabled: true
     rpc_nodes:
@@ -150,6 +142,6 @@ logging:
     stdout: true
 
 telegram:
-  bot_token: "<YOUR TOKEN>"
+  bot_token: "" # specify your token
   long_polling: true
   bot_name: "<Your bot name, starting with the @ symbol>"

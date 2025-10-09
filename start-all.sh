@@ -249,7 +249,7 @@ start_docker_services() {
     
     execute_command \
         "Starting infrastructure services with docker compose..." \
-        "docker compose up -d migrate apex rescanner postgres redis mongo nats-server consul" \
+        "docker compose up -d migrate apex rescanner postgres redis mongo nats-server consul multichain-indexer fystack-ui-community" \
         "Infrastructure services started successfully" \
         "Failed to start infrastructure services"
     
@@ -328,6 +328,7 @@ print_summary() {
     echo
     log_info "🌐 Services available:"
     echo "  - Apex API: http://localhost:8150"
+    echo "  - FyStack UI: http://localhost:8015"
     echo "  - Consul UI: http://localhost:8500"
     echo "  - NATS Monitoring: http://localhost:8222"
     echo "  - MPCIUM Node 0: http://localhost:8080"
