@@ -69,6 +69,10 @@ Reindexes block gaps to ensure complete blockchain data coverage, filling in any
 
 ## Quick Start Steps
 
+> **📺 Video Tutorial:** Watch the complete setup walkthrough on YouTube:
+>
+> [![Fystack Setup Tutorial](https://img.shields.io/badge/YouTube-Watch%20Tutorial-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=AjY9t7orbs4)
+
 ### 1. Docker Login
 
 First, authenticate with the Fystack Labs Docker registry:
