@@ -258,3 +258,13 @@ cd dev
 docker compose pull apex
 docker compose up -d --no-deps --force-recreate apex
 ```
+
+---
+
+## ⚠️ Important Notice
+
+> **WARNING: This setup is for testing environments only.**
+>
+> For **manual deployment, Docker Compose, or Kubernetes deployment** for **maximum security**, please contact the **Fystack team** to get support and guidance on enterprise-grade deployment configurations.
+>
+> [![Telegram](https://img.shields.io/badge/Telegram-Contact%20Fystack%20Team-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+IsRhPyWuOFxmNmM9)
