@@ -11,7 +11,7 @@ Welcome to **Fystack**! This guide will help you get up and running quickly with
 
 Fystack is a modular, self-hosted MPC wallet infrastructure designed to help you integrate threshold cryptography securely and easily into your custody system.
 
-**This quick start guide helps developers and teams bootstrap a complete Fystack testnet environment with a single shell script command (`./start-all.sh`).** By setting up Fystack locally, you can:
+**This quick start guide helps developers and teams bootstrap a complete Fystack testnet environment with a single shell script command (`./fystack-ignite.sh`).** By setting up Fystack locally, you can:
 
 - **Understand the Fystack architecture** hands-on with all core components running
 - **Set up your local development environment quickly** without manual service configuration
@@ -82,7 +82,7 @@ Change to the root directory, make the start script executable.
 Make sure you are at the root folder of the project
 
 ```bash
-chmod +x ./start-all.sh
+chmod +x ./fystack-ignite.sh
 ```
 
 ### 4. Start the Fystack Cluster
@@ -90,7 +90,7 @@ chmod +x ./start-all.sh
 Run the complete setup and startup script at the root folder of the project.
 
 ```bash
-./start-all.sh
+./fystack-ignite.sh
 ```
 
 This script will automatically:
@@ -102,11 +102,11 @@ This script will automatically:
 
 Services started include:
 
-- **NATS messaging server** (port 4222)
-- **Consul service discovery** (port 8500)
-- **PostgreSQL database** (port 5432)
-- **Redis** (port 6379)
-- **MongoDB** (port 27017)
+- **NATS messaging server** (port 4223)
+- **Consul service discovery** (port 8501)
+- **PostgreSQL database** (port 5433)
+- **Redis** (port 6380)
+- **MongoDB** (port 27018)
 - **Apex API** (port 8150)
 - **3 MPC nodes** (node0, node1, node2)
 - **Automatic peer registration**
@@ -137,19 +137,24 @@ docker compose -f ./dev/docker-compose.yaml logs -f mpcium-node0
 
 Your Fystack cluster includes:
 
-| Service         | Purpose                                | Port  |
-| --------------- | -------------------------------------- | ----- |
-| **NATS Server** | Messaging layer for node communication | 4222  |
-| **Consul**      | Service discovery and health checks    | 8500  |
-| **PostgreSQL**  | Database for custody operations        | 5432  |
-| **Redis**       | In-memory data store                   | 6379  |
-| **MongoDB**     | Document database                      | 27017 |
-| **Apex API**    | Main API service                       | 8150  |
-| **Migrate**     | Database migration service             | -     |
-| **MPC Node 0**  | First MPC node                         | 8080  |
-| **MPC Node 1**  | Second MPC node                        | 8081  |
-| **MPC Node 2**  | Third MPC node                         | 8082  |
-| **MPCIUM Init** | Peer registration service              | -     |
+> **Note:** PostgreSQL, Redis, MongoDB, NATS, and Consul ports have been increased by 1 to avoid conflicts with your development environment. All ports are bound to 127.0.0.1 (localhost) for security.
+
+| Service                  | Purpose                                        | Port  |
+| ------------------------ | ---------------------------------------------- | ----- |
+| **NATS Server**          | Messaging layer for node communication         | 4223  |
+| **Consul**               | Service discovery and health checks            | 8501  |
+| **PostgreSQL**           | Database for custody operations                | 5433  |
+| **Redis**                | In-memory data store                           | 6380  |
+| **MongoDB**              | Document database                              | 27018 |
+| **Apex API**             | Main API service                               | 8150  |
+| **Migrate**              | Database migration service                     | -     |
+| **Rescanner**            | Reindexes block gaps for complete data         | -     |
+| **Multichain Indexer**   | Indexes blockchain transactions in real-time   | -     |
+| **Fystack UI Community** | Community web interface for Fystack            | 8015  |
+| **MPC Node 0**           | First MPC node                                 | 8080  |
+| **MPC Node 1**           | Second MPC node                                | 8081  |
+| **MPC Node 2**           | Third MPC node                                 | 8082  |
+| **MPCIUM Init**          | Peer registration service                      | -     |
 
 ## E2E Testing
 

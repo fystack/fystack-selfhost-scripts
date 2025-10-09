@@ -26,7 +26,7 @@ services:
     image: docker.io/fystacklabs/apex:1.0.28
     container_name: apex
     ports:
-      - "8150:8150"
+      - "127.0.0.1:8150:8150"
     environment:
       - ENVIRONMENT=dev
       - NATS_URL=nats://nats-server:4222
@@ -80,7 +80,7 @@ services:
     image: docker.io/fystacklabs/fystack-ui-community:1.0.0
     container_name: fystack-ui-community
     ports:
-      - "8015:8080"
+      - "127.0.0.1:8015:8080"
     restart: unless-stopped
     networks:
       - apex
@@ -88,6 +88,8 @@ services:
   postgres:
     image: postgres
     container_name: postgres_fystack
+    ports:
+      - "127.0.0.1:5433:5432"
     environment:
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: custody
@@ -104,7 +106,7 @@ services:
     image: redis/redis-stack-server:latest
     container_name: redis_fystack
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6380:6379"
     environment:
       - REDIS_ARGS=--requirepass 6s9H5G9o4p5Fz25K9RyWd6eOryU8nQ
     healthcheck:
@@ -119,6 +121,8 @@ services:
   mongo:
     image: mongo:latest
     container_name: mongo_fystack
+    ports:
+      - "127.0.0.1:27018:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
@@ -137,9 +141,9 @@ services:
     container_name: nats-server_fystack
     command: -js --http_port 8222
     ports:
-      - "4222:4222"
-      - "8222:8222"
-      - "6222:6222"
+      - "127.0.0.1:4223:4222"
+      - "127.0.0.1:8223:8222"
+      - "127.0.0.1:6223:6222"
     tty: true
     restart: always
     networks:
@@ -149,8 +153,8 @@ services:
     image: consul:1.15.4
     container_name: consul_fystack
     ports:
-      - "8500:8500"
-      - "8601:8600/udp"
+      - "127.0.0.1:8501:8500"
+      - "127.0.0.1:8602:8600/udp"
     command: "agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0"
     healthcheck:
       test: ["CMD", "consul", "operator", "raft", "list-peers"]
@@ -176,7 +180,7 @@ services:
       - mpcium-node0-db:/app/db
       - mpcium-node0-backups:/app/backups
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     depends_on:
       nats-server:
         condition: service_started
@@ -201,7 +205,7 @@ services:
       - mpcium-node1-db:/app/db
       - mpcium-node1-backups:/app/backups
     ports:
-      - "8081:8080"
+      - "127.0.0.1:8081:8080"
     depends_on:
       nats-server:
         condition: service_started
@@ -226,7 +230,7 @@ services:
       - mpcium-node2-db:/app/db
       - mpcium-node2-backups:/app/backups
     ports:
-      - "8082:8080"
+      - "127.0.0.1:8082:8080"
     depends_on:
       nats-server:
         condition: service_started
