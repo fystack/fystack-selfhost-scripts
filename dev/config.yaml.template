@@ -122,7 +122,7 @@ secret_store:
 
 address_risk_providers:
   webacy:
-    api_key: "" # Can leave empty
+    api_key: "" # get the api key https://docs.webacy.com/reference/webacy-api-overview
 
 system_admins:
   - "mail1@gmail.com" # Replace with system admin email(s)
