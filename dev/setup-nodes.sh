@@ -29,6 +29,15 @@ ENCRYPT_KEYS=${ENCRYPT_KEYS:-false}
 NATS_URL=${NATS_URL:-"nats://nats-server:4222"}
 CONSUL_ADDRESS=${CONSUL_ADDRESS:-"consul:8500"}
 
+# Detect OS for sed compatibility
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS (BSD sed)
+    SED_INPLACE=(-i '')
+else
+    # Linux (GNU sed)
+    SED_INPLACE=(-i)
+fi
+
 # MPCIUM CLI binary path
 MPCIUM_CLI="$PROJECT_ROOT/mpcium-cli"
 
@@ -211,7 +220,7 @@ generate_event_initiator() {
         INITIATOR_PUBKEY=$(jq -r '.public_key' event_initiator.identity.json)
         
         # Update config.yaml with the initiator public key
-        sed -i "s/event_initiator_pubkey: \"PLACEHOLDER_WILL_BE_UPDATED\"/event_initiator_pubkey: \"$INITIATOR_PUBKEY\"/" config.yaml
+        sed "${SED_INPLACE[@]}" "s/event_initiator_pubkey: \"PLACEHOLDER_WILL_BE_UPDATED\"/event_initiator_pubkey: \"$INITIATOR_PUBKEY\"/" config.yaml
         
         log_success "Updated config.yaml with event initiator public key"
         log_info "Event initiator public key: ***MASKED***"
@@ -250,7 +259,7 @@ update_main_config_with_private_key() {
     # Update the main config.yaml with the private key in the new MPC structure
     if grep -q "pk_raw:" "$MAIN_CONFIG_FILE"; then
         # Replace any existing value in the nested mpc.signer.local.pk_raw structure
-        sed -i "s/pk_raw: \".*\"/pk_raw: \"$PRIVATE_KEY\"/" "$MAIN_CONFIG_FILE"
+        sed "${SED_INPLACE[@]}" "s/pk_raw: \".*\"/pk_raw: \"$PRIVATE_KEY\"/" "$MAIN_CONFIG_FILE"
         log_success "Updated mpc.signer.local.pk_raw in main config.yaml"
     else
         log_error "mpc.signer.local.pk_raw field not found in main config.yaml"
