@@ -119,7 +119,7 @@ services:
       - apex
 
   mongo:
-    image: mongo:latest
+    image: mongo:4.4
     container_name: mongo_fystack
     ports:
       - "127.0.0.1:27018:27017"

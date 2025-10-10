@@ -21,7 +21,7 @@ services:
     tty: true
 
   mongo-prod:
-    image: mongo:latest
+    image: mongo:7.0
     container_name: mongo-apex-production
     security_opt:
       - no-new-privileges:true
