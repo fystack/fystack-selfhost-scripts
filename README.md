@@ -67,6 +67,8 @@ Reindexes block gaps to ensure complete blockchain data coverage, filling in any
 - Internet connection
 - Recommended system: 8v CPU, 16GB RAM
 
+> **Note:** The self-host scripts currently support Linux only. Native support for macOS and Windows is in progress.
+
 ## Quick Start Steps
 
 > **📺 Video Tutorial:** Watch the complete setup walkthrough on YouTube:
