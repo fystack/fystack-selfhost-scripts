@@ -5,6 +5,10 @@ Welcome to **Fystack**! This guide will help you get up and running quickly with
 - **Apex**: The backend core API
 - **MPCIUM**: Self-hosted MPC nodes for secure signing and key management
 
+## 🐧 Platform Support
+
+> **Linux only right now.** Native macOS and Windows support is coming soon.
+
 ---
 
 ## Overview
@@ -66,8 +70,6 @@ Reindexes block gaps to ensure complete blockchain data coverage, filling in any
 - Bash shell
 - Internet connection
 - Recommended system: 8v CPU, 16GB RAM
-
-> **Note:** The self-host scripts currently support Linux only. Native support for macOS and Windows is in progress.
 
 ## Quick Start Steps
 
