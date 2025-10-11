@@ -15,24 +15,15 @@ Welcome to **Fystack**! This guide will help you get up and running quickly with
 
 ![Fystack Sandbox](images/fystack-sandbox.png)
 
-**Fystack** is a complete **self-hosted custodial wallet infrastructure** that runs entirely on your own servers. Built on **MPC (Multi-Party Computation) technology**, Fystack enables you to deploy a **secure digital asset custody solution** with **threshold cryptography** and **distributed key management**—all without relying on third-party custody providers.
+**Fystack** is a self-hosted custodial wallet platform built on **MPC (Multi-Party Computation)** so you can run secure threshold cryptography on hardware you control—no third-party custody required.
 
-**Deploy a complete self-hosted MPC custodian infrastructure on your own hardware.** With Fystack, you maintain full control over your digital asset custody infrastructure, including:
+With Fystack you keep full ownership of:
 
-- **Self-hosted MPC nodes** for distributed private key generation and signing
-- **Complete infrastructure ownership** with no external dependencies for key management
-- **Threshold signature scheme (TSS)** for enhanced security and fault tolerance
-- **Enterprise-grade custody solution** deployable on-premises or in your private cloud
-- **Full sovereignty** over your cryptographic key material and signing operations
+- **MPC nodes** that handle distributed keygen and signing
+- **Key material and policies** with no external dependencies
+- **Threshold signature security** that scales across on-prem and private cloud setups
 
-**This quick start guide helps developers and teams bootstrap a complete Fystack testnet environment with a single shell script command (`./fystack-ignite.sh`).** By setting up Fystack locally, you can:
-
-- **Understand the Fystack architecture** hands-on with all core components running
-- **Set up your local development environment quickly** without manual service configuration
-- **Test and explore** MPC wallet features on testnet before production deployment
-- **Evaluate a self-hosted custodial solution** before deploying to production infrastructure
-
-This guide will walk you through running the **backend API** and a **local MPCIUM cluster** in minutes—giving you a fully functional **self-hosted digital asset custodian** for testing and development.
+Run `./fystack-ignite.sh` to spin up the entire test stack in minutes. The quick start gives you hands-on access to Apex plus a local MPCIUM cluster so you can explore the architecture, build against real services, and validate the workflow before production.
 
 ---
 
