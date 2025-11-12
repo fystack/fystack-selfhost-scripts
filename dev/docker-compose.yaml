@@ -1,6 +1,6 @@
 services:
   migrate:
-    image: docker.io/fystacklabs/apex-migrate:1.0.8
+    image: docker.io/fystacklabs/apex-migrate:1.0.9
     # build:
     #   context: ..
     #   dockerfile: deployments/migrate/Dockerfile
@@ -23,7 +23,7 @@ services:
     # build:
     #   context: ..
     #   dockerfile: deployments/api/Dockerfile
-    image: docker.io/fystacklabs/apex:1.0.28
+    image: docker.io/fystacklabs/apex:1.0.35
     container_name: apex
     ports:
       - "127.0.0.1:8150:8150"
@@ -67,7 +67,14 @@ services:
   multichain-indexer:
     image: docker.io/fystacklabs/multichain-indexer:1.0.0
     container_name: multichain-indexer
-    command: ["index", "--chains=${CHAINS}", "--debug", "--catchup", "--manual"]
+    command:
+      [
+        "index",
+        "--chains=${CHAINS:-tron_testnet}",
+        "--debug",
+        "--catchup",
+        "--manual",
+      ]
     environment:
       - CHAINS=tron_testnet
     restart: unless-stopped
@@ -77,7 +84,7 @@ services:
       - ./config.indexer.yaml:/app/configs/config.yaml:ro
 
   fystack-ui-community:
-    image: docker.io/fystacklabs/fystack-ui-community:1.0.0
+    image: docker.io/fystacklabs/fystack-ui-community:1.0.1
     container_name: fystack-ui-community
     ports:
       - "127.0.0.1:8015:8080"

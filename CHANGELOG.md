@@ -168,3 +168,60 @@ TRON_SHASTA_TESTNET:
 ```sh
 docker compose up -d multichain-indexer
 ```
+
+## v0.1.8
+
+### New Integrity Signer Configuration
+
+**⚠️ WARNING: MUST FOLLOW EVERY STEP EXACTLY ⚠️**
+
+**Step 1: Pull latest images and migrate database**
+
+```sh
+cd dev
+
+docker compose pull migrate apex
+docker compose up -d --no-deps --force-recreate migrate
+```
+
+Wait for migration to complete successfully.
+
+**Step 2: Update config.yaml**
+
+Add the following new `integrity` section to your `config.yaml`:
+
+```yaml
+integrity:
+  signer:
+    version: 1
+    type: "ed25519" # Options: "ed25519" or "kms"
+    ed25519:
+      private_key: "" # 32 byte ed25519 seed (64 hex characters)
+```
+
+**Generate the ed25519 private key:**
+
+```sh
+openssl rand -hex 32
+```
+
+Copy the output and paste it into the `private_key` field in the `integrity` section at the bottom of your `config.yaml`.
+
+**Step 3: Run the one-time balance integrity migration**
+
+This migration moves balance data from Consul to the database:
+
+```sh
+docker run --rm \
+  --network dev_apex \
+  -v "$(pwd)/config.yaml:/root/config.yaml:ro" \
+  fystacklabs/balance-integrity-migrate:1.0.0
+```
+
+Wait for the migration to complete successfully.
+
+**Step 4: Restart apex**
+
+```sh
+docker compose up -d --no-deps --force-recreate apex
+```

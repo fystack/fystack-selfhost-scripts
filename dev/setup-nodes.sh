@@ -129,7 +129,7 @@ set_docker_configuration() {
 
 cleanup_existing_setup() {
     log_info "Cleaning up existing setup..."
-    
+
     # Remove existing node directories
     for i in $(seq 0 $(($NUM_NODES - 1))); do
         if [ -d "$BASE_DIR/node$i" ]; then
@@ -137,15 +137,15 @@ cleanup_existing_setup() {
             rm -rf "$BASE_DIR/node$i"
         fi
     done
-    
-    # Remove existing files
-    for file in peers.json event_initiator.identity.json event_initiator.key event_initiator.key.age config.yaml; do
+
+    # Remove existing files (but preserve event_initiator keys if pk_raw is already set)
+    for file in peers.json config.yaml; do
         if [ -f "$BASE_DIR/$file" ]; then
             log_warning "Removing existing $file"
             rm -f "$BASE_DIR/$file"
         fi
     done
-    
+
     log_success "Cleanup completed"
 }
 
@@ -202,26 +202,55 @@ EOF
 }
 
 generate_event_initiator() {
-    log_info "Generating event initiator..."
-    
+    log_info "Checking event initiator setup..."
+
     cd "$BASE_DIR"
-    
-    # Generate event initiator using mpcium-cli
-    if [ "$ENCRYPT_KEYS" = "true" ]; then
-        "$MPCIUM_CLI" generate-initiator --encrypt
-        log_success "Generated encrypted event initiator"
-    else
-        "$MPCIUM_CLI" generate-initiator
-        log_success "Generated unencrypted event initiator"
+
+    # Check if pk_raw already exists in main config
+    MAIN_CONFIG_FILE="$SCRIPT_DIR/config.yaml"
+    EXISTING_PK_RAW=""
+
+    if [ -f "$MAIN_CONFIG_FILE" ]; then
+        EXISTING_PK_RAW=$(grep -oP 'pk_raw:\s*"\K[^"]+' "$MAIN_CONFIG_FILE" || echo "")
     fi
-    
+
+    # If pk_raw exists and keys exist, reuse them
+    if [ -n "$EXISTING_PK_RAW" ] && [ -f "event_initiator.key" ] && [ -f "event_initiator.identity.json" ]; then
+        log_warning "Existing event initiator found (pk_raw is set)"
+        log_info "Reusing existing keys to maintain consistency with running services"
+
+        # Verify the keys match
+        EXISTING_KEY=$(cat "event_initiator.key" | tr -d '\n\r')
+        if [ "$EXISTING_KEY" = "$EXISTING_PK_RAW" ]; then
+            log_success "Verified: event_initiator.key matches pk_raw in main config"
+        else
+            log_error "Mismatch detected between event_initiator.key and pk_raw in main config!"
+            log_error "This will cause signature verification failures."
+            log_error "Please either:"
+            log_error "  1. Delete dev/node-configs/event_initiator.* files and re-run"
+            log_error "  2. Set pk_raw to empty string in dev/config.yaml and re-run"
+            exit 1
+        fi
+    else
+        log_info "Generating new event initiator..."
+
+        # Generate event initiator using mpcium-cli
+        if [ "$ENCRYPT_KEYS" = "true" ]; then
+            "$MPCIUM_CLI" generate-initiator --encrypt
+            log_success "Generated encrypted event initiator"
+        else
+            "$MPCIUM_CLI" generate-initiator
+            log_success "Generated unencrypted event initiator"
+        fi
+    fi
+
     # Extract public key from identity file
     if [ -f "event_initiator.identity.json" ]; then
         INITIATOR_PUBKEY=$(jq -r '.public_key' event_initiator.identity.json)
-        
+
         # Update config.yaml with the initiator public key
         sed "${SED_INPLACE[@]}" "s/event_initiator_pubkey: \"PLACEHOLDER_WILL_BE_UPDATED\"/event_initiator_pubkey: \"$INITIATOR_PUBKEY\"/" config.yaml
-        
+
         log_success "Updated config.yaml with event initiator public key"
         log_info "Event initiator public key: ***MASKED***"
     else

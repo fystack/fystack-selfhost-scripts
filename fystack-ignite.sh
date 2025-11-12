@@ -32,6 +32,7 @@ DOCKER_COMPOSE_FILE="$DEV_DIR/docker-compose.yaml"
 
 # Configuration
 WAIT_FOR_SERVICES=${WAIT_FOR_SERVICES:-5}   # Time to wait for services to start
+declare -a MPCIUM_NODE_INDEXES=()
 
 # Sensitive data masking function
 mask_sensitive_data() {
@@ -172,6 +173,68 @@ make_executable() {
     fi
 }
 
+discover_mpcium_nodes() {
+    local nodes_dir="$DEV_DIR/node-configs"
+    
+    if [ ! -d "$nodes_dir" ]; then
+        log_error "node-configs directory not found at: $nodes_dir"
+        exit 1
+    fi
+    
+    local dirs=()
+    while IFS= read -r dir; do
+        dirs+=("$dir")
+    done < <(find "$nodes_dir" -maxdepth 1 -type d -name 'node*' -print | sort -V)
+    
+    if [ ${#dirs[@]} -eq 0 ]; then
+        log_error "No MPCIUM node directories found in $nodes_dir"
+        exit 1
+    fi
+    
+    for dir in "${dirs[@]}"; do
+        local base_name
+        base_name=$(basename "$dir")
+        local index="${base_name#node}"
+        if [[ "$index" =~ ^[0-9]+$ ]]; then
+            echo "$index"
+        fi
+    done
+}
+
+show_service_logs() {
+    local service="$1"
+    local logs
+    
+    logs="$( (cd "$DEV_DIR" && docker compose logs --tail=50 "$service" 2>&1) || true )"
+    
+    if [ -n "$logs" ]; then
+        log_info "Recent logs for $service:"
+        mask_output "$logs"
+    else
+        log_warning "No logs available for $service"
+    fi
+}
+
+check_mpcium_node() {
+    local index="$1"
+    local container_name="mpcium-node$index"
+    local service_name="mpcium$index"
+    
+    if docker ps --format "{{.Names}}" | grep -qw "$container_name"; then
+        log_success "$container_name is running"
+        return 0
+    fi
+    
+    local status exit_code
+    status=$(docker inspect "$container_name" --format='{{.State.Status}}' 2>/dev/null || echo "unknown")
+    exit_code=$(docker inspect "$container_name" --format='{{.State.ExitCode}}' 2>/dev/null || echo "unknown")
+    
+    log_error "$container_name failed to start (status: $status, exit code: $exit_code)"
+    show_service_logs "$service_name"
+    
+    return 1
+}
+
 print_banner() {
     echo -e "${BLUE}"
     echo "╔══════════════════════════════════════════════════════════════════════════════════╗"
@@ -268,6 +331,12 @@ register_peers_and_start_mpcium() {
     
     cd "$DEV_DIR"
     
+    mapfile -t MPCIUM_NODE_INDEXES < <(discover_mpcium_nodes)
+    local mpcium_services=()
+    for index in "${MPCIUM_NODE_INDEXES[@]}"; do
+        mpcium_services+=("mpcium$index")
+    done
+    
     execute_command \
         "Registering peers with MPCIUM cluster..." \
         "$REGISTER_SCRIPT" \
@@ -276,17 +345,25 @@ register_peers_and_start_mpcium() {
     
     execute_command \
         "Starting MPCIUM nodes..." \
-        "docker compose up -d mpcium0 mpcium1 mpcium2" \
+        "docker compose up -d ${mpcium_services[*]}" \
         "MPCIUM nodes started successfully" \
         "Failed to start MPCIUM nodes"
     
     log_info "Waiting for MPCIUM nodes to initialize..."
     sleep 10
     
-    # Check MPCIUM nodes status
-    for i in {0..2}; do
-        check_service_running "mpcium-node$i" "mpcium-node$i is running" "mpcium-node$i is not running yet"
+    # Check MPCIUM nodes status with diagnostics
+    local failed_nodes=0
+    for index in "${MPCIUM_NODE_INDEXES[@]}"; do
+        if ! check_mpcium_node "$index"; then
+            failed_nodes=$((failed_nodes + 1))
+        fi
     done
+    
+    if [ $failed_nodes -gt 0 ]; then
+        log_error "$failed_nodes MPCIUM node(s) failed to start. See logs above for details."
+        exit 1
+    fi
 }
 
 restart_apex_service() {
@@ -314,6 +391,10 @@ restart_apex_service() {
 }
 
 print_summary() {
+    if [ ${#MPCIUM_NODE_INDEXES[@]} -eq 0 ]; then
+        mapfile -t MPCIUM_NODE_INDEXES < <(discover_mpcium_nodes)
+    fi
+    
     echo
     echo -e "${GREEN}╔══════════════════════════════════════════════════════════════════════════════════╗${NC}"
     echo -e "${GREEN}║                            🎉 SETUP COMPLETE! 🎉                                 ║${NC}"
@@ -324,16 +405,17 @@ print_summary() {
     log_info "📋 Summary of completed steps:"
     echo "  ✅ 1. MPCIUM node configurations generated"
     echo "  ✅ 2. Infrastructure services started"
-    echo "  ✅ 3. Peers registered and MPCIUM nodes started"
+    echo "  ✅ 3. Peers registered and MPCIUM nodes started (${#MPCIUM_NODE_INDEXES[@]} nodes)"
     echo
     log_info "🌐 Services available:"
     echo "  - Apex API: http://localhost:8150"
     echo "  - FyStack UI: http://localhost:8015"
     echo "  - Consul UI: http://localhost:8500"
     echo "  - NATS Monitoring: http://localhost:8222"
-    echo "  - MPCIUM Node 0: http://localhost:8080"
-    echo "  - MPCIUM Node 1: http://localhost:8081"
-    echo "  - MPCIUM Node 2: http://localhost:8082"
+    for index in "${MPCIUM_NODE_INDEXES[@]}"; do
+        local port=$((8080 + index))
+        echo "  - MPCIUM Node $index: http://localhost:$port"
+    done
     echo "  - Redis: localhost:6379"
     echo "  - PostgreSQL: localhost:5432"
     echo "  - MongoDB: localhost:27017"

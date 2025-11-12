@@ -145,3 +145,11 @@ telegram:
   bot_token: "" # specify your token
   long_polling: true
   bot_name: "<Your bot name, starting with the @ symbol>"
+
+# Generate private key using: openssl rand -hex 32
+integrity:
+  signer:
+    version: 1
+    type: "ed25519" # Options: "ed25519" or "kms"
+    ed25519:
+      private_key: "" # 32 byte ed25519 seed (64 hex characters) - Generate using: openssl rand -hex 32

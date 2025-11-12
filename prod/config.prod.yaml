@@ -149,3 +149,11 @@ mpc:
 
 system_admins: # System admins will be able to configure networks, assets in the portal
   - "youremail@domain.io" # Replace with your team email
+
+# Generate private key using: openssl rand -hex 32
+integrity:
+  signer:
+    version: 1
+    type: "ed25519" # Options: "ed25519" or "kms"
+    ed25519:
+      private_key: "" # 32 byte ed25519 seed (64 hex characters) - Generate using: openssl rand -hex 32
