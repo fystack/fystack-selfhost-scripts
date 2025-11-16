@@ -56,6 +56,7 @@ port: 8150
 
 price_refresh_period: 25m
 price_cache_duration: 30m # if no refresh then the price is still available for at least 5 more minutes
+price_refresh_on_start: true
 gas_data_cache_duration: 10s
 
 wallet:

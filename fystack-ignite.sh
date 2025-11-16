@@ -72,10 +72,14 @@ mask_sensitive_data() {
     
     # Mask private keys in general (64 character hex strings)
     text=$(echo "$text" | sed 's/private_key: "[a-f0-9]\{64\}"/private_key: "***MASKED***"/g')
-    
+
+    # Mask integrity signer keys (64 character hex strings for ed25519 seeds)
+    text=$(echo "$text" | sed 's/Generated integrity signer.*key.*/Generated integrity signer key: ***MASKED***/g')
+    text=$(echo "$text" | sed 's/Integrity signer key.*:/Integrity signer key: ***MASKED***/g')
+
     # Mask peer IDs (if they contain sensitive information)
     text=$(echo "$text" | sed 's/peer_id: "[^"]*"/peer_id: "***MASKED***"/g')
-    
+
     echo "$text"
 }
 

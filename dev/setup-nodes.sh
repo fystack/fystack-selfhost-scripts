@@ -261,30 +261,30 @@ generate_event_initiator() {
 
 update_main_config_with_private_key() {
     log_info "Updating main config.yaml with event initiator private key..."
-    
+
     # Path to the main config.yaml file
     MAIN_CONFIG_FILE="$SCRIPT_DIR/config.yaml"
-    
+
     # Check if the main config file exists
     if [ ! -f "$MAIN_CONFIG_FILE" ]; then
         log_error "Main config.yaml not found at: $MAIN_CONFIG_FILE"
         exit 1
     fi
-    
+
     # Check if event_initiator.key exists
     if [ ! -f "$BASE_DIR/event_initiator.key" ]; then
         log_error "event_initiator.key not found at: $BASE_DIR/event_initiator.key"
         exit 1
     fi
-    
+
     # Read the private key from the file
     PRIVATE_KEY=$(cat "$BASE_DIR/event_initiator.key" | tr -d '\n\r')
-    
+
     if [ -z "$PRIVATE_KEY" ]; then
         log_error "Failed to read private key from event_initiator.key"
         exit 1
     fi
-    
+
     # Update the main config.yaml with the private key in the new MPC structure
     if grep -q "pk_raw:" "$MAIN_CONFIG_FILE"; then
         # Replace any existing value in the nested mpc.signer.local.pk_raw structure
@@ -294,8 +294,93 @@ update_main_config_with_private_key() {
         log_error "mpc.signer.local.pk_raw field not found in main config.yaml"
         exit 1
     fi
-    
+
     log_info "Event initiator private key length: ***MASKED*** characters"
+}
+
+generate_integrity_signer_key() {
+    log_info "Generating integrity signer ed25519 private key..."
+
+    cd "$BASE_DIR"
+
+    # Check if integrity signer key already exists
+    if [ -f "integrity_signer.key" ]; then
+        log_warning "Existing integrity_signer.key found"
+        log_info "Reusing existing integrity signer key to maintain consistency"
+
+        INTEGRITY_KEY=$(cat "integrity_signer.key" | tr -d '\n\r')
+
+        # Validate key length (should be 64 hex characters = 32 bytes)
+        if [ ${#INTEGRITY_KEY} -ne 64 ]; then
+            log_error "Invalid integrity signer key length: ${#INTEGRITY_KEY} (expected 64)"
+            log_error "Please delete integrity_signer.key and re-run to generate a new one"
+            exit 1
+        fi
+
+        log_success "Verified existing integrity signer key (64 hex characters)"
+    else
+        log_info "Generating new 32-byte ed25519 seed..."
+
+        # Generate 32-byte ed25519 seed (64 hex characters)
+        INTEGRITY_KEY=$(openssl rand -hex 32)
+
+        if [ -z "$INTEGRITY_KEY" ] || [ ${#INTEGRITY_KEY} -ne 64 ]; then
+            log_error "Failed to generate valid integrity signer key"
+            exit 1
+        fi
+
+        # Save to file
+        echo -n "$INTEGRITY_KEY" > "integrity_signer.key"
+        chmod 644 "integrity_signer.key"
+
+        log_success "Generated new integrity signer ed25519 private key"
+        log_info "Integrity signer key saved to: $BASE_DIR/integrity_signer.key"
+    fi
+}
+
+update_main_config_with_integrity_key() {
+    log_info "Updating main config.yaml with integrity signer private key..."
+
+    # Path to the main config.yaml file
+    MAIN_CONFIG_FILE="$SCRIPT_DIR/config.yaml"
+
+    # Check if the main config file exists
+    if [ ! -f "$MAIN_CONFIG_FILE" ]; then
+        log_error "Main config.yaml not found at: $MAIN_CONFIG_FILE"
+        exit 1
+    fi
+
+    # Check if integrity_signer.key exists
+    if [ ! -f "$BASE_DIR/integrity_signer.key" ]; then
+        log_error "integrity_signer.key not found at: $BASE_DIR/integrity_signer.key"
+        exit 1
+    fi
+
+    # Read the integrity signer key from the file
+    INTEGRITY_KEY=$(cat "$BASE_DIR/integrity_signer.key" | tr -d '\n\r')
+
+    if [ -z "$INTEGRITY_KEY" ]; then
+        log_error "Failed to read integrity signer key from integrity_signer.key"
+        exit 1
+    fi
+
+    # Validate key length
+    if [ ${#INTEGRITY_KEY} -ne 64 ]; then
+        log_error "Invalid integrity signer key length: ${#INTEGRITY_KEY} (expected 64)"
+        exit 1
+    fi
+
+    # Update the main config.yaml with the integrity signer private key
+    if grep -q "integrity:" "$MAIN_CONFIG_FILE" && grep -q "private_key:" "$MAIN_CONFIG_FILE"; then
+        # Replace the private_key value in the integrity.signer.ed25519 structure
+        sed "${SED_INPLACE[@]}" "s/private_key: \".*\" # 32 byte ed25519 seed/private_key: \"$INTEGRITY_KEY\" # 32 byte ed25519 seed/" "$MAIN_CONFIG_FILE"
+        log_success "Updated integrity.signer.ed25519.private_key in main config.yaml"
+    else
+        log_error "integrity.signer.ed25519.private_key field not found in main config.yaml"
+        exit 1
+    fi
+
+    log_info "Integrity signer private key updated (64 hex characters)"
 }
 
 create_node_directories() {
@@ -398,17 +483,23 @@ fix_file_permissions() {
         chmod 644 event_initiator.identity.json
         log_info "Fixed permissions for event_initiator.identity.json"
     fi
-    
+
     if [ -f "event_initiator.key" ]; then
         chmod 644 event_initiator.key
         log_info "Fixed permissions for event_initiator.key"
     fi
-    
+
     if [ -f "event_initiator.key.age" ]; then
         chmod 644 event_initiator.key.age
         log_info "Fixed permissions for event_initiator.key.age"
     fi
-    
+
+    # Fix permissions for integrity signer key
+    if [ -f "integrity_signer.key" ]; then
+        chmod 644 integrity_signer.key
+        log_info "Fixed permissions for integrity_signer.key"
+    fi
+
     log_success "File permissions fixed for Docker compatibility"
 }
 print_summary() {
@@ -428,6 +519,7 @@ print_summary() {
     else
         echo "  ├── event_initiator.key (private key)"
     fi
+    echo "  ├── integrity_signer.key (integrity ed25519 private key)"
     for i in $(seq 0 $(($NUM_NODES - 1))); do
         echo "  └── node$i/ (node configuration)"
         echo "      ├── config.yaml"
@@ -536,6 +628,8 @@ main() {
     generate_config_yaml
     generate_event_initiator
     update_main_config_with_private_key
+    generate_integrity_signer_key
+    update_main_config_with_integrity_key
     create_node_directories
     generate_node_identities
     distribute_identity_files
