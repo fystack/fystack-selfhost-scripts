@@ -80,7 +80,7 @@ When prompted, enter your password.
 
 > **Need the Docker password?** Join the Fystack Telegram community to get access:
 >
-> [![Telegram](https://img.shields.io/badge/Telegram-Join%20Community-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+IsRhPyWuOFxmNmM9)
+> [![Telegram](https://img.shields.io/badge/Telegram-Join%20Community-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+9AtC0z8sS79iZjFl)
 
 ### 2. Copy config files from the template
 
