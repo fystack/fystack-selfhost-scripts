@@ -84,7 +84,7 @@ services:
       - ./config.indexer.yaml:/app/configs/config.yaml:ro
 
   fystack-ui-community:
-    image: docker.io/fystacklabs/fystack-ui-community:1.0.1
+    image: docker.io/fystacklabs/fystack-ui-community:1.0.2
     container_name: fystack-ui-community
     ports:
       - "127.0.0.1:8015:8080"
