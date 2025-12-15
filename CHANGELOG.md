@@ -225,3 +225,23 @@ Wait for the migration to complete successfully.
 ```sh
 docker compose up -d --no-deps --force-recreate apex
 ```
+
+## v0.1.9
+
+Update the image tags to the latest versions:
+
+```yaml
+migrate:
+  image: docker.io/fystacklabs/apex-migrate:1.0.13
+
+apex:
+  image: docker.io/fystacklabs/apex:1.0.43
+```
+
+```sh
+cd dev
+
+docker compose pull migrate apex
+docker compose up -d --no-deps --force-recreate migrate
+docker compose up -d --no-deps --force-recreate apex
+```
