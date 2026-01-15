@@ -311,14 +311,27 @@ run_setup_nodes() {
 
 start_docker_services() {
     log_info "Step 2: Starting Docker Compose services (excluding MPCIUM nodes)..."
-    
+
     cd "$DEV_DIR"
-    
-    execute_command \
-        "Starting infrastructure services with docker compose..." \
-        "docker compose up -d migrate apex rescanner postgres redis mongo nats-server consul multichain-indexer fystack-ui-community" \
-        "Infrastructure services started successfully" \
-        "Failed to start infrastructure services"
+
+    log_info "Starting infrastructure services with docker compose..."
+    log_warning "This may take a few minutes if Docker images need to be pulled. Please wait..."
+
+    local output
+    output=$(docker compose up -d migrate apex rescanner postgres redis mongo nats-server consul multichain-indexer fystack-ui-community 2>&1)
+    local exit_code=$?
+
+    local masked_output=$(mask_output "$output")
+    if [ -n "$masked_output" ]; then
+        echo "$masked_output"
+    fi
+
+    if [ $exit_code -eq 0 ]; then
+        log_success "Infrastructure services started successfully"
+    else
+        log_error "Failed to start infrastructure services (exit code: $exit_code)"
+        exit 1
+    fi
     
     log_info "Waiting $WAIT_FOR_SERVICES seconds for services to initialize..."
     sleep "$WAIT_FOR_SERVICES"

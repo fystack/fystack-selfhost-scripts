@@ -1,6 +1,6 @@
 services:
   migrate:
-    image: docker.io/fystacklabs/apex-migrate:1.0.13
+    image: docker.io/fystacklabs/apex-migrate:1.0.16
     # build:
     #   context: ..
     #   dockerfile: deployments/migrate/Dockerfile
@@ -23,7 +23,7 @@ services:
     # build:
     #   context: ..
     #   dockerfile: deployments/api/Dockerfile
-    image: docker.io/fystacklabs/apex:1.0.43
+    image: docker.io/fystacklabs/apex:1.0.44
     container_name: apex
     ports:
       - "127.0.0.1:8150:8150"
@@ -84,7 +84,7 @@ services:
       - ./config.indexer.yaml:/app/configs/config.yaml:ro
 
   fystack-ui-community:
-    image: docker.io/fystacklabs/fystack-ui-community:1.0.2
+    image: docker.io/fystacklabs/fystack-ui-community:1.0.8
     container_name: fystack-ui-community
     ports:
       - "127.0.0.1:8015:8080"
