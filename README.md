@@ -248,6 +248,26 @@ docker compose -f ./dev/docker-compose.yaml logs -f mpcium-node0
 
 The successful completion of these logs indicates that your MPC wallet has been created and the key generation process completed across all nodes.
 
+## Deploying on a VPS / Reverse Proxy
+
+By default, the Fystack UI connects to the Apex API at `http://localhost:8150`. If you're deploying on a VPS (e.g., Linode, DigitalOcean) behind a reverse proxy, you need to set the `API_BASE_URL` environment variable so the UI can reach the API.
+
+**Option 1: Export the variable before running the script**
+
+```bash
+export API_BASE_URL=https://api.yourdomain.com
+./fystack-ignite.sh
+```
+
+**Option 2: Create a `.env` file in the `dev/` directory**
+
+```bash
+echo "API_BASE_URL=https://api.yourdomain.com" > dev/.env
+./fystack-ignite.sh
+```
+
+Replace `https://api.yourdomain.com` with the public URL where your Apex API is accessible through your reverse proxy.
+
 ## Update version
 
 To update version of a component (New docker image version)

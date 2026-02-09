@@ -88,6 +88,12 @@ services:
     container_name: fystack-ui-community
     ports:
       - "127.0.0.1:8015:8080"
+    environment:
+      - API_BASE_URL=${API_BASE_URL:-http://localhost:8150}
+    entrypoint: ["/ui-entrypoint.sh"]
+    command: ["nginx", "-g", "daemon off;"]
+    volumes:
+      - ./ui-entrypoint.sh:/ui-entrypoint.sh:ro
     restart: unless-stopped
     networks:
       - apex
