@@ -316,6 +316,17 @@ echo "API_BASE_URL=https://api.yourdomain.com" > dev/.env
 
 Replace `https://api.yourdomain.com` with the public URL where your Apex API is accessible through your reverse proxy.
 
+### Changing the API URL later
+
+To update the `API_BASE_URL` after the initial setup (e.g., switching domains):
+
+```bash
+export API_BASE_URL=https://new-domain.com
+docker compose -f ./dev/docker-compose.yaml up -d --force-recreate fystack-ui-community
+```
+
+This recreates the UI container with the new URL. No other services are affected.
+
 ## Update version
 
 To update version of a component (New docker image version)

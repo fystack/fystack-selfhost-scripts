@@ -39,11 +39,13 @@ else
 fi
 
 # MPCIUM CLI Docker image
-MPCIUM_CLI_IMAGE=${MPCIUM_CLI_IMAGE:-"docker.io/fystacklabs/mpcium-cli:latest"}
+MPCIUM_CLI_IMAGE=${MPCIUM_CLI_IMAGE:-"docker.io/fystacklabs/mpcium-cli:0.3.5"}
 
-# Run mpcium-cli via Docker, mounting the current working directory as /app
+# Run mpcium-cli via Docker, mounting the current working directory as /data
+# Note: The binary lives at /app/mpcium-cli, so we must not mount over /app
+# Uses --user so the container can write to the mounted host directory
 run_mpcium_cli() {
-    docker run --rm -v "$(pwd):/app" -w /app "$MPCIUM_CLI_IMAGE" "$@"
+    docker run --rm --user "$(id -u):$(id -g)" -e USER=nonroot -v "$(pwd):/data" -w /data "$MPCIUM_CLI_IMAGE" "$@"
 }
 
 # Logging functions
@@ -131,9 +133,23 @@ set_docker_configuration() {
 cleanup_existing_setup() {
     log_info "Cleaning up existing setup..."
 
-    # Remove existing node directories
+    # Check if any files/dirs are root-owned (from previous Docker runs) and use Docker to clean them
+    local needs_docker_cleanup=false
     for i in $(seq 0 $(($NUM_NODES - 1))); do
-        if [ -d "$BASE_DIR/node$i" ]; then
+        if [ -e "$BASE_DIR/node$i" ] && ! rm -rf "$BASE_DIR/node$i" 2>/dev/null; then
+            needs_docker_cleanup=true
+            break
+        fi
+    done
+
+    if [ "$needs_docker_cleanup" = true ]; then
+        log_warning "Found root-owned files from previous Docker runs, cleaning up with Docker..."
+        docker run --rm -v "$BASE_DIR:/data" -w /data alpine sh -c "rm -rf node* peers.json config.yaml"
+    fi
+
+    # Remove any remaining node directories
+    for i in $(seq 0 $(($NUM_NODES - 1))); do
+        if [ -e "$BASE_DIR/node$i" ]; then
             log_warning "Removing existing node$i directory"
             rm -rf "$BASE_DIR/node$i"
         fi
