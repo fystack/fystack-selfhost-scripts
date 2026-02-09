@@ -273,7 +273,7 @@ check_prerequisites() {
     done
     
     # Check if required tools are available
-    for tool in docker; do
+    for tool in docker jq; do
         if ! command -v $tool &> /dev/null; then
             log_error "$tool is required but not installed or not in PATH."
             exit 1
