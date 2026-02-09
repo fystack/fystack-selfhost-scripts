@@ -38,8 +38,15 @@ else
     SED_INPLACE=(-i)
 fi
 
-# MPCIUM CLI binary path
-MPCIUM_CLI="$PROJECT_ROOT/mpcium-cli"
+# MPCIUM CLI Docker image
+MPCIUM_CLI_IMAGE=${MPCIUM_CLI_IMAGE:-"docker.io/fystacklabs/mpcium-cli:0.3.5"}
+
+# Run mpcium-cli via Docker, mounting the current working directory as /data
+# Note: The binary lives at /app/mpcium-cli, so we must not mount over /app
+# Uses --user so the container can write to the mounted host directory
+run_mpcium_cli() {
+    docker run --rm --user "$(id -u):$(id -g)" -e USER=nonroot -v "$(pwd):/data" -w /data "$MPCIUM_CLI_IMAGE" "$@"
+}
 
 # Logging functions
 log_info() {
@@ -73,27 +80,23 @@ generate_strong_password() {
 
 check_prerequisites() {
     log_info "Checking prerequisites..."
-    
-    # Check if mpcium-cli binary exists
-    if [ ! -f "$MPCIUM_CLI" ]; then
-        log_error "mpcium-cli binary not found at: $MPCIUM_CLI"
-        exit 1
-    fi
-    
-    # Check if mpcium-cli is executable
-    if [ ! -x "$MPCIUM_CLI" ]; then
-        log_error "mpcium-cli binary is not executable"
-        exit 1
-    fi
-    
+
     # Check if required tools are available
-    for tool in openssl jq; do
+    for tool in docker openssl jq; do
         if ! command -v $tool &> /dev/null; then
             log_error "$tool is required but not installed."
             exit 1
         fi
     done
-    
+
+    # Verify mpcium-cli Docker image is accessible
+    log_info "Pulling mpcium-cli Docker image ($MPCIUM_CLI_IMAGE)..."
+    if ! docker pull "$MPCIUM_CLI_IMAGE" > /dev/null 2>&1; then
+        log_error "Failed to pull mpcium-cli image: $MPCIUM_CLI_IMAGE"
+        log_error "Make sure you are logged in: docker login -u fystacklabs"
+        exit 1
+    fi
+
     log_success "Prerequisites check passed"
 }
 
@@ -130,9 +133,23 @@ set_docker_configuration() {
 cleanup_existing_setup() {
     log_info "Cleaning up existing setup..."
 
-    # Remove existing node directories
+    # Check if any files/dirs are root-owned (from previous Docker runs) and use Docker to clean them
+    local needs_docker_cleanup=false
     for i in $(seq 0 $(($NUM_NODES - 1))); do
-        if [ -d "$BASE_DIR/node$i" ]; then
+        if [ -e "$BASE_DIR/node$i" ] && ! rm -rf "$BASE_DIR/node$i" 2>/dev/null; then
+            needs_docker_cleanup=true
+            break
+        fi
+    done
+
+    if [ "$needs_docker_cleanup" = true ]; then
+        log_warning "Found root-owned files from previous Docker runs, cleaning up with Docker..."
+        docker run --rm -v "$BASE_DIR:/data" -w /data alpine sh -c "rm -rf node* peers.json config.yaml"
+    fi
+
+    # Remove any remaining node directories
+    for i in $(seq 0 $(($NUM_NODES - 1))); do
+        if [ -e "$BASE_DIR/node$i" ]; then
             log_warning "Removing existing node$i directory"
             rm -rf "$BASE_DIR/node$i"
         fi
@@ -155,7 +172,7 @@ generate_peer_configuration() {
     cd "$BASE_DIR"
     
     # Generate peers.json using mpcium-cli
-    "$MPCIUM_CLI" generate-peers -n $NUM_NODES -o peers.json
+    run_mpcium_cli generate-peers -n $NUM_NODES -o peers.json
     
     if [ ! -f "peers.json" ]; then
         log_error "Failed to generate peers.json"
@@ -171,10 +188,18 @@ generate_peer_configuration() {
 
 generate_config_yaml() {
     log_info "Creating config.yaml..."
-    
+
     # Generate strong password
     BADGER_PASSWORD=$(generate_strong_password)
-    
+
+    # Generate chain code for HD wallet derivation (32 bytes = 64 hex chars)
+    CHAIN_CODE=$(openssl rand -hex 32)
+    if [ -z "$CHAIN_CODE" ] || [ ${#CHAIN_CODE} -ne 64 ]; then
+        log_error "Failed to generate valid chain_code"
+        exit 1
+    fi
+    log_success "Generated chain_code for HD wallet derivation"
+
     # Create config.yaml
     cat > "$BASE_DIR/config.yaml" << EOF
 nats:
@@ -187,7 +212,8 @@ mpc_threshold: $MPC_THRESHOLD
 environment: $ENVIRONMENT
 badger_password: "$BADGER_PASSWORD"
 event_initiator_pubkey: "PLACEHOLDER_WILL_BE_UPDATED"
-db_path: "."  
+chain_code: "$CHAIN_CODE"
+db_path: "."
 backup_enabled: true
 backup_period_seconds: 300 # 5 minutes
 backup_dir: backups
@@ -211,7 +237,7 @@ generate_event_initiator() {
     EXISTING_PK_RAW=""
 
     if [ -f "$MAIN_CONFIG_FILE" ]; then
-        EXISTING_PK_RAW=$(grep -oP 'pk_raw:\s*"\K[^"]+' "$MAIN_CONFIG_FILE" || echo "")
+        EXISTING_PK_RAW=$(sed -n 's/.*pk_raw:[[:space:]]*"\([^"]*\)".*/\1/p' "$MAIN_CONFIG_FILE" | head -1)
     fi
 
     # If pk_raw exists and keys exist, reuse them
@@ -236,10 +262,10 @@ generate_event_initiator() {
 
         # Generate event initiator using mpcium-cli
         if [ "$ENCRYPT_KEYS" = "true" ]; then
-            "$MPCIUM_CLI" generate-initiator --encrypt
+            run_mpcium_cli generate-initiator --encrypt
             log_success "Generated encrypted event initiator"
         else
-            "$MPCIUM_CLI" generate-initiator
+            run_mpcium_cli generate-initiator
             log_success "Generated unencrypted event initiator"
         fi
     fi
@@ -410,9 +436,9 @@ generate_node_identities() {
         log_info "Generating identity for $NODE_NAME..."
         
         if [ "$ENCRYPT_KEYS" = "true" ]; then
-            "$MPCIUM_CLI" generate-identity --node "$NODE_NAME" --encrypt
+            run_mpcium_cli generate-identity --node "$NODE_NAME" --encrypt
         else
-            "$MPCIUM_CLI" generate-identity --node "$NODE_NAME"
+            run_mpcium_cli generate-identity --node "$NODE_NAME"
         fi
         
         log_success "Generated identity for $NODE_NAME"
@@ -529,13 +555,12 @@ print_summary() {
     echo
     log_info "🚀 Next steps:"
     if [ "$DEPLOYMENT_TYPE" = "docker" ]; then
-        echo "  1. Start Docker infrastructure: cd dev && docker-compose up -d"
-        echo "  2. Register peers: cd dev/node-configs && ../../mpcium-cli register-peers"
-        echo "  3. Check logs: docker-compose logs -f mpcium0"
+        echo "  1. Start Docker infrastructure: cd dev && docker compose up -d"
+        echo "  2. Peers will be auto-registered via --peers flag on node startup"
+        echo "  3. Check logs: docker compose logs -f mpcium0"
     else
         echo "  1. Start NATS and Consul infrastructure"
-        echo "  2. Register peers: cd dev/node-configs && ../../mpcium-cli register-peers"
-        echo "  3. Start nodes manually: cd node0 && mpcium start --name node0"
+        echo "  2. Start nodes: cd node0 && mpcium start --name node0 --peers peers.json"
     fi
     echo
     log_warning "🔐 Important: Store the BadgerDB password securely!"

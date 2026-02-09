@@ -27,7 +27,6 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEV_DIR="$SCRIPT_DIR/dev"
 SETUP_SCRIPT="$DEV_DIR/setup-nodes.sh"
-REGISTER_SCRIPT="$DEV_DIR/register-peers.sh"
 DOCKER_COMPOSE_FILE="$DEV_DIR/docker-compose.yaml"
 
 # Configuration
@@ -188,7 +187,7 @@ discover_mpcium_nodes() {
     local dirs=()
     while IFS= read -r dir; do
         dirs+=("$dir")
-    done < <(find "$nodes_dir" -maxdepth 1 -type d -name 'node*' -print | sort -V)
+    done < <(find "$nodes_dir" -maxdepth 1 -type d -name 'node*' -print | sort -t 'e' -k2 -n)
     
     if [ ${#dirs[@]} -eq 0 ]; then
         log_error "No MPCIUM node directories found in $nodes_dir"
@@ -247,7 +246,7 @@ print_banner() {
     echo "║  This script orchestrates the entire setup and startup process:                 ║"
     echo "║  1. Generate MPCIUM node configurations                                          ║"
     echo "║  2. Start Docker Compose services                                                ║"
-    echo "║  3. Register peers and start MPCIUM nodes                                        ║"
+    echo "║  3. Start MPCIUM nodes (peers auto-registered on startup)                         ║"
     echo "╚══════════════════════════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
     echo
@@ -259,7 +258,6 @@ check_prerequisites() {
     # Check if required scripts exist
     local required_files=(
         "$SETUP_SCRIPT:setup-nodes.sh"
-        "$REGISTER_SCRIPT:register-peers.sh"
         "$DOCKER_COMPOSE_FILE:docker-compose.yaml"
     )
     
@@ -273,7 +271,7 @@ check_prerequisites() {
     done
     
     # Check if required tools are available
-    for tool in docker; do
+    for tool in docker jq; do
         if ! command -v $tool &> /dev/null; then
             log_error "$tool is required but not installed or not in PATH."
             exit 1
@@ -288,7 +286,6 @@ check_prerequisites() {
     
     # Make scripts executable
     make_executable "$SETUP_SCRIPT" "setup-nodes.sh"
-    make_executable "$REGISTER_SCRIPT" "register-peers.sh"
     
     log_success "Prerequisites check passed"
 }
@@ -343,32 +340,29 @@ start_docker_services() {
     check_service_running "consul" "consul service is running" "consul service is not running yet"
 }
 
-register_peers_and_start_mpcium() {
-    log_info "Step 3: Registering peers and starting MPCIUM nodes..."
-    
+start_mpcium_nodes() {
+    log_info "Step 3: Starting MPCIUM nodes (peers auto-registered via --peers flag)..."
+
     cd "$DEV_DIR"
-    
-    mapfile -t MPCIUM_NODE_INDEXES < <(discover_mpcium_nodes)
+
+    MPCIUM_NODE_INDEXES=()
+    while IFS= read -r line; do
+        MPCIUM_NODE_INDEXES+=("$line")
+    done < <(discover_mpcium_nodes)
     local mpcium_services=()
     for index in "${MPCIUM_NODE_INDEXES[@]}"; do
         mpcium_services+=("mpcium$index")
     done
-    
-    execute_command \
-        "Registering peers with MPCIUM cluster..." \
-        "$REGISTER_SCRIPT" \
-        "Peers registered successfully" \
-        "Failed to register peers"
-    
+
     execute_command \
         "Starting MPCIUM nodes..." \
         "docker compose up -d ${mpcium_services[*]}" \
         "MPCIUM nodes started successfully" \
         "Failed to start MPCIUM nodes"
-    
+
     log_info "Waiting for MPCIUM nodes to initialize..."
     sleep 10
-    
+
     # Check MPCIUM nodes status with diagnostics
     local failed_nodes=0
     for index in "${MPCIUM_NODE_INDEXES[@]}"; do
@@ -376,7 +370,7 @@ register_peers_and_start_mpcium() {
             failed_nodes=$((failed_nodes + 1))
         fi
     done
-    
+
     if [ $failed_nodes -gt 0 ]; then
         log_error "$failed_nodes MPCIUM node(s) failed to start. See logs above for details."
         exit 1
@@ -409,7 +403,10 @@ restart_apex_service() {
 
 print_summary() {
     if [ ${#MPCIUM_NODE_INDEXES[@]} -eq 0 ]; then
-        mapfile -t MPCIUM_NODE_INDEXES < <(discover_mpcium_nodes)
+        MPCIUM_NODE_INDEXES=()
+        while IFS= read -r line; do
+            MPCIUM_NODE_INDEXES+=("$line")
+        done < <(discover_mpcium_nodes)
     fi
     
     echo
@@ -422,7 +419,7 @@ print_summary() {
     log_info "📋 Summary of completed steps:"
     echo "  ✅ 1. MPCIUM node configurations generated"
     echo "  ✅ 2. Infrastructure services started"
-    echo "  ✅ 3. Peers registered and MPCIUM nodes started (${#MPCIUM_NODE_INDEXES[@]} nodes)"
+    echo "  ✅ 3. MPCIUM nodes started with auto-peer registration (${#MPCIUM_NODE_INDEXES[@]} nodes)"
     echo
     log_info "🌐 Services available:"
     echo "  - Apex API: http://localhost:8150"
@@ -485,7 +482,7 @@ main() {
                 echo "This script will:"
                 echo "  1. Generate MPCIUM node configurations (unless --skip-setup)"
                 echo "  2. Start infrastructure services (excluding MPCIUM nodes)"
-                echo "  3. Register peers and start MPCIUM nodes"
+                echo "  3. Start MPCIUM nodes (peers auto-registered on startup)"
                 exit 0
                 ;;
             *)
@@ -505,7 +502,7 @@ main() {
     fi
     
     start_docker_services
-    register_peers_and_start_mpcium
+    start_mpcium_nodes
     
     print_summary
 }

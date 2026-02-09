@@ -5,9 +5,13 @@ Welcome to **Fystack**! This guide will help you get up and running quickly with
 - **Apex**: The backend core API
 - **MPCIUM**: Self-hosted MPC nodes for secure signing and key management
 
-## 🐧 Platform Support
+## Platform Support
 
-> **Linux only right now.** Native macOS and Windows support is coming soon.
+| Platform | Status |
+|----------|--------|
+| **Linux** | Fully supported |
+| **macOS** | Fully supported (requires Docker Desktop) |
+| **Windows** | Supported via WSL2 (see below) |
 
 ---
 
@@ -60,7 +64,51 @@ Reindexes block gaps to ensure complete blockchain data coverage, filling in any
 - Docker and Docker Compose installed
 - Bash shell
 - Internet connection
-- Recommended system: 8v CPU, 16GB RAM
+- Recommended system: 4 vCPU, 4 GB RAM
+
+### Windows (WSL2)
+
+Windows users must run the scripts inside **WSL2** (Windows Subsystem for Linux). Docker Desktop for Windows already uses WSL2 under the hood, so this is the natural fit.
+
+**1. Install WSL2** (if you haven't already)
+
+Open PowerShell as Administrator and run:
+
+```powershell
+wsl --install
+```
+
+This installs WSL2 with Ubuntu by default. Restart your machine when prompted.
+
+**2. Install Docker Desktop for Windows**
+
+Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/). During setup, ensure **"Use the WSL 2 based engine"** is checked (it's the default).
+
+After installation, go to Docker Desktop **Settings > Resources > WSL Integration** and enable integration for your WSL2 distro (e.g., Ubuntu).
+
+**3. Install `jq` inside WSL2**
+
+Open your WSL2 terminal (Ubuntu) and run:
+
+```bash
+sudo apt update && sudo apt install -y jq
+```
+
+**4. Clone and run inside WSL2**
+
+```bash
+# Open WSL2 terminal
+wsl
+
+# Clone the repo (or navigate to it if already cloned)
+git clone git@github.com:fystack/fystack-selfhost-scripts.git
+cd fystack-selfhost-scripts
+
+# Follow the Quick Start Steps below as normal
+./fystack-ignite.sh
+```
+
+> **Note:** Always run the scripts from within a WSL2 terminal, not from PowerShell or CMD. The `docker` command inside WSL2 talks to Docker Desktop automatically.
 
 ## Quick Start Steps
 
@@ -247,6 +295,37 @@ docker compose -f ./dev/docker-compose.yaml logs -f mpcium-node0
 ```
 
 The successful completion of these logs indicates that your MPC wallet has been created and the key generation process completed across all nodes.
+
+## Deploying on a VPS / Reverse Proxy
+
+By default, the Fystack UI connects to the Apex API at `http://localhost:8150`. If you're deploying on a VPS (e.g., Linode, DigitalOcean) behind a reverse proxy, you need to set the `API_BASE_URL` environment variable so the UI can reach the API.
+
+**Option 1: Export the variable before running the script**
+
+```bash
+export API_BASE_URL=https://api.yourdomain.com
+./fystack-ignite.sh
+```
+
+**Option 2: Create a `.env` file in the `dev/` directory**
+
+```bash
+echo "API_BASE_URL=https://api.yourdomain.com" > dev/.env
+./fystack-ignite.sh
+```
+
+Replace `https://api.yourdomain.com` with the public URL where your Apex API is accessible through your reverse proxy.
+
+### Changing the API URL later
+
+To update the `API_BASE_URL` after the initial setup (e.g., switching domains):
+
+```bash
+export API_BASE_URL=https://new-domain.com
+docker compose -f ./dev/docker-compose.yaml up -d --force-recreate fystack-ui-community
+```
+
+This recreates the UI container with the new URL. No other services are affected.
 
 ## Update version
 

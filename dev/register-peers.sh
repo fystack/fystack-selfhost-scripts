@@ -19,6 +19,13 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Detect OS for sed compatibility
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    SED_INPLACE=(-i '')
+else
+    SED_INPLACE=(-i)
+fi
+
 # MPCIUM CLI binary path
 MPCIUM_CLI="$PROJECT_ROOT/mpcium-cli"
 NODE_CONFIGS_DIR="$SCRIPT_DIR/node-configs"
@@ -85,8 +92,8 @@ register_peers() {
     
     # Update the temporary config to use localhost instead of Docker service names
     # Note: Using the host-mapped ports (4223 for NATS, 8501 for Consul)
-    sed -i 's/nats:\/\/nats-server:4222/nats:\/\/localhost:4223/g' config.local.yaml
-    sed -i 's/consul:8500/localhost:8501/g' config.local.yaml
+    sed "${SED_INPLACE[@]}" 's/nats:\/\/nats-server:4222/nats:\/\/localhost:4223/g' config.local.yaml
+    sed "${SED_INPLACE[@]}" 's/consul:8500/localhost:8501/g' config.local.yaml
 
     log_info "Using localhost addresses for CLI operations:"
     echo "  - NATS: nats://localhost:4223"
