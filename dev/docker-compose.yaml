@@ -23,7 +23,7 @@ services:
     # build:
     #   context: ..
     #   dockerfile: deployments/api/Dockerfile
-    image: docker.io/fystacklabs/apex:1.0.44
+    image: docker.io/fystacklabs/apex:1.0.45
     container_name: apex
     ports:
       - "127.0.0.1:8150:8150"
