@@ -82,12 +82,14 @@ encryption_key: 82441c6785f53e02dbf97db9db2107ad # 16 bytes, replace with your v
 networks:
   ETHER_SEPOLIA_TESTNET:
     enabled: true
+    wss_enabled: true
     providers:
       - name: "publicnode"
         http: "https://ethereum-sepolia-rpc.publicnode.com"
         wss: "wss://ethereum-sepolia-rpc.publicnode.com"
   BASE_SEPOLIA_TESTNET:
     enabled: true
+    wss_enabled: true
     providers:
       - name: "publicnode"
         http: "https://base-sepolia-rpc.publicnode.com"
