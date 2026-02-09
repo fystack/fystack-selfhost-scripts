@@ -179,11 +179,9 @@ services:
       - apex
   ## MPCIUM
   mpcium0:
-    # build:
-    #   context: ../..
-    #   dockerfile: deployments/mpcium/Dockerfile
-    image: docker.io/fystacklabs/mpcium:0.3.0
+    image: docker.io/fystacklabs/mpcium:0.3.5
     container_name: mpcium-node0
+    command: ["start", "-n", "node0", "--peers", "/app/peers.json"]
     environment:
       - NODE_NAME=node0
     volumes:
@@ -204,11 +202,9 @@ services:
       - apex
 
   mpcium1:
-    # build:
-    #   context: ../..
-    #   dockerfile: deployments/mpcium/Dockerfile
-    image: docker.io/fystacklabs/mpcium:0.3.0
+    image: docker.io/fystacklabs/mpcium:0.3.5
     container_name: mpcium-node1
+    command: ["start", "-n", "node1", "--peers", "/app/peers.json"]
     environment:
       - NODE_NAME=node1
     volumes:
@@ -229,11 +225,9 @@ services:
       - apex
 
   mpcium2:
-    # build:
-    #   context: ../..
-    #   dockerfile: deployments/mpcium/Dockerfile
-    image: docker.io/fystacklabs/mpcium:0.3.0
+    image: docker.io/fystacklabs/mpcium:0.3.5
     container_name: mpcium-node2
+    command: ["start", "-n", "node2", "--peers", "/app/peers.json"]
     environment:
       - NODE_NAME=node2
     volumes:
