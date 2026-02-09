@@ -221,7 +221,7 @@ generate_event_initiator() {
     EXISTING_PK_RAW=""
 
     if [ -f "$MAIN_CONFIG_FILE" ]; then
-        EXISTING_PK_RAW=$(grep -oP 'pk_raw:\s*"\K[^"]+' "$MAIN_CONFIG_FILE" || echo "")
+        EXISTING_PK_RAW=$(sed -n 's/.*pk_raw:[[:space:]]*"\([^"]*\)".*/\1/p' "$MAIN_CONFIG_FILE" | head -1)
     fi
 
     # If pk_raw exists and keys exist, reuse them

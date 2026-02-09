@@ -187,7 +187,7 @@ discover_mpcium_nodes() {
     local dirs=()
     while IFS= read -r dir; do
         dirs+=("$dir")
-    done < <(find "$nodes_dir" -maxdepth 1 -type d -name 'node*' -print | sort -V)
+    done < <(find "$nodes_dir" -maxdepth 1 -type d -name 'node*' -print | sort -t 'e' -k2 -n)
     
     if [ ${#dirs[@]} -eq 0 ]; then
         log_error "No MPCIUM node directories found in $nodes_dir"
@@ -345,7 +345,10 @@ start_mpcium_nodes() {
 
     cd "$DEV_DIR"
 
-    mapfile -t MPCIUM_NODE_INDEXES < <(discover_mpcium_nodes)
+    MPCIUM_NODE_INDEXES=()
+    while IFS= read -r line; do
+        MPCIUM_NODE_INDEXES+=("$line")
+    done < <(discover_mpcium_nodes)
     local mpcium_services=()
     for index in "${MPCIUM_NODE_INDEXES[@]}"; do
         mpcium_services+=("mpcium$index")
@@ -400,7 +403,10 @@ restart_apex_service() {
 
 print_summary() {
     if [ ${#MPCIUM_NODE_INDEXES[@]} -eq 0 ]; then
-        mapfile -t MPCIUM_NODE_INDEXES < <(discover_mpcium_nodes)
+        MPCIUM_NODE_INDEXES=()
+        while IFS= read -r line; do
+            MPCIUM_NODE_INDEXES+=("$line")
+        done < <(discover_mpcium_nodes)
     fi
     
     echo

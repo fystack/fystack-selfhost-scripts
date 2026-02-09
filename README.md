@@ -5,9 +5,13 @@ Welcome to **Fystack**! This guide will help you get up and running quickly with
 - **Apex**: The backend core API
 - **MPCIUM**: Self-hosted MPC nodes for secure signing and key management
 
-## 🐧 Platform Support
+## Platform Support
 
-> **Linux only right now.** Native macOS and Windows support is coming soon.
+| Platform | Status |
+|----------|--------|
+| **Linux** | Fully supported |
+| **macOS** | Fully supported (requires Docker Desktop) |
+| **Windows** | Supported via WSL2 (see below) |
 
 ---
 
@@ -60,7 +64,51 @@ Reindexes block gaps to ensure complete blockchain data coverage, filling in any
 - Docker and Docker Compose installed
 - Bash shell
 - Internet connection
-- Recommended system: 8v CPU, 16GB RAM
+- Recommended system: 4 vCPU, 4 GB RAM
+
+### Windows (WSL2)
+
+Windows users must run the scripts inside **WSL2** (Windows Subsystem for Linux). Docker Desktop for Windows already uses WSL2 under the hood, so this is the natural fit.
+
+**1. Install WSL2** (if you haven't already)
+
+Open PowerShell as Administrator and run:
+
+```powershell
+wsl --install
+```
+
+This installs WSL2 with Ubuntu by default. Restart your machine when prompted.
+
+**2. Install Docker Desktop for Windows**
+
+Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/). During setup, ensure **"Use the WSL 2 based engine"** is checked (it's the default).
+
+After installation, go to Docker Desktop **Settings > Resources > WSL Integration** and enable integration for your WSL2 distro (e.g., Ubuntu).
+
+**3. Install `jq` inside WSL2**
+
+Open your WSL2 terminal (Ubuntu) and run:
+
+```bash
+sudo apt update && sudo apt install -y jq
+```
+
+**4. Clone and run inside WSL2**
+
+```bash
+# Open WSL2 terminal
+wsl
+
+# Clone the repo (or navigate to it if already cloned)
+git clone git@github.com:fystack/fystack-selfhost-scripts.git
+cd fystack-selfhost-scripts
+
+# Follow the Quick Start Steps below as normal
+./fystack-ignite.sh
+```
+
+> **Note:** Always run the scripts from within a WSL2 terminal, not from PowerShell or CMD. The `docker` command inside WSL2 talks to Docker Desktop automatically.
 
 ## Quick Start Steps
 
