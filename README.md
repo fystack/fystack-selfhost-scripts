@@ -68,6 +68,8 @@ Reindexes block gaps to ensure complete blockchain data coverage, filling in any
 
 ### Windows (WSL2)
 
+> **Non-Windows users can skip this section.**
+
 Windows users must run the scripts inside **WSL2** (Windows Subsystem for Linux). Docker Desktop for Windows already uses WSL2 under the hood, so this is the natural fit.
 
 **1. Install WSL2** (if you haven't already)
@@ -94,21 +96,13 @@ Open your WSL2 terminal (Ubuntu) and run:
 sudo apt update && sudo apt install -y jq
 ```
 
-**4. Clone and run inside WSL2**
+**4. Open a WSL2 terminal**
+
+All subsequent commands must be run from within a WSL2 terminal, not from PowerShell or CMD. The `docker` command inside WSL2 talks to Docker Desktop automatically.
 
 ```bash
-# Open WSL2 terminal
 wsl
-
-# Clone the repo (or navigate to it if already cloned)
-git clone git@github.com:fystack/fystack-selfhost-scripts.git
-cd fystack-selfhost-scripts
-
-# Follow the Quick Start Steps below as normal
-./fystack-ignite.sh
 ```
-
-> **Note:** Always run the scripts from within a WSL2 terminal, not from PowerShell or CMD. The `docker` command inside WSL2 talks to Docker Desktop automatically.
 
 ## Quick Start Steps
 
@@ -116,7 +110,14 @@ cd fystack-selfhost-scripts
 >
 > [![Fystack Setup Tutorial](https://img.shields.io/badge/YouTube-Watch%20Tutorial-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://www.youtube.com/watch?v=AjY9t7orbs4)
 
-### 1. Docker Login
+### 1. Clone the Repository
+
+```bash
+git clone git@github.com:fystack/fystack-selfhost-scripts.git
+cd fystack-selfhost-scripts
+```
+
+### 2. Docker Login
 
 First, authenticate with the Fystack Labs Docker registry:
 
@@ -130,7 +131,7 @@ When prompted, enter your password.
 >
 > [![Telegram](https://img.shields.io/badge/Telegram-Join%20Community-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+9AtC0z8sS79iZjFl)
 
-### 2. Copy config files from the template
+### 3. Copy config files from the template
 
 ```
 cp ./dev/config.yaml.template ./dev/config.yaml
@@ -140,7 +141,7 @@ cp ./dev/config.indexer.yaml.template ./dev/config.indexer.yaml
 
 > **Important:** You don't need to update all configuration values. The only mandatory configuration is the **CoinMarketCap API key**. Visit https://pro.coinmarketcap.com/login/ to create a CoinMarketCap API key, then add it to `config.yaml` under the `price_providers` configuration.
 
-### 3. Make Start Script Executable
+### 4. Make Start Script Executable
 
 Change to the root directory, make the start script executable.
 Make sure you are at the root folder of the project
@@ -149,7 +150,7 @@ Make sure you are at the root folder of the project
 chmod +x ./fystack-ignite.sh
 ```
 
-### 4. Start the Fystack Cluster
+### 5. Start the Fystack Cluster
 
 Run the complete setup and startup script at the root folder of the project.
 
@@ -175,13 +176,13 @@ Services started include:
 - **3 MPC nodes** (node0, node1, node2)
 - **Automatic peer registration**
 
-### 5. Visit the Fystack Portal
+### 6. Visit the Fystack Portal
 
 Once all services are running, you can access the Fystack portal at [http://localhost:8015](http://localhost:8015)
 
 ![Fystack Portal](images/fystack-portal.png)
 
-### 6. Verify the Setup
+### 7. Verify the Setup
 
 Check that all services are running:
 
@@ -191,7 +192,7 @@ docker compose -f ./dev/docker-compose.yaml ps
 
 You should see all services in the "Up" state.
 
-### 5. View Logs (Optional)
+### 8. View Logs (Optional)
 
 Monitor the cluster logs:
 
