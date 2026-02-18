@@ -82,18 +82,18 @@ encryption_key: 82441c6785f53e02dbf97db9db2107ad # 16 bytes, replace with your v
 networks:
   ETHER_SEPOLIA_TESTNET:
     enabled: true
-    wss_enabled: true
+    wss_enabled: true # set to false to disable websocket indexing, use multichain-indexer instead
     providers:
       - name: "publicnode"
         http: "https://ethereum-sepolia-rpc.publicnode.com"
-        wss: "wss://ethereum-sepolia-rpc.publicnode.com"
+        wss: "wss://ethereum-sepolia-rpc.publicnode.com" # leave empty or remove if wss_enabled is false
   BASE_SEPOLIA_TESTNET:
     enabled: true
-    wss_enabled: true
+    wss_enabled: true # set to false to disable websocket indexing, use multichain-indexer instead
     providers:
       - name: "publicnode"
         http: "https://base-sepolia-rpc.publicnode.com"
-        wss: "wss://base-sepolia-rpc.publicnode.com"
+        wss: "wss://base-sepolia-rpc.publicnode.com" # leave empty or remove if wss_enabled is false
   SOL_DEVNET:
     enabled: true
     rpc_nodes:
