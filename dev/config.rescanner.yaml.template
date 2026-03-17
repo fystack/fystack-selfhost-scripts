@@ -15,14 +15,14 @@ consul:
 networks:
   SOL_MAINNET:
     enabled: false
-    id: "4b5bf0f9-5b89-45fb-8166-784ff1326b59"
+    network_id: "4b5bf0f9-5b89-45fb-8166-784ff1326b59"
     name: "Solana mainnet"
     rpcnodes:
       - url: "https://api.mainnet-beta.solana.com"
         origin: ""
   SOL_DEVNET:
     enabled: true
-    id: "2e89cd02-8585-47b3-90e3-a92185f6ca5f"
+    network_id: "2e89cd02-8585-47b3-90e3-a92185f6ca5f"
     name: "Solana devnet"
     rpcnodes:
       - url: "https://api.devnet.solana.com"
