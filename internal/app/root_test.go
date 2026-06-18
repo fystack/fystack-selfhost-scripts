@@ -762,6 +762,105 @@ func TestDiscoverMPCServicesSortsByNodeIndex(t *testing.T) {
 	}
 }
 
+func TestDestroyRunsComposeDownAndResetsFiles(t *testing.T) {
+	root := t.TempDir()
+	mustWrite(t, filepath.Join(root, "stack.versions.yaml"), `services:
+  apex:
+    env: FYSTACK_APEX_IMAGE
+    image: docker.io/fystacklabs/apex:1.0.54
+    environments: [dev]
+`)
+	mustWrite(t, filepath.Join(root, "dev", "docker-compose.yaml"), "services: {}\n")
+	mustWrite(t, filepath.Join(root, "dev", "config.yaml"), "name: test\n")
+	mustWrite(t, filepath.Join(root, "dev", "config.rescanner.yaml"), "name: test\n")
+	mustWrite(t, filepath.Join(root, "dev", "config.indexer.yaml"), "name: test\n")
+	mustWrite(t, filepath.Join(root, "dev", "node-configs", "node0", "config.yaml"), "name: node0\n")
+	mustWrite(t, filepath.Join(root, ".fystack.compose.env"), "FYSTACK_APEX_IMAGE=x\n")
+
+	var out bytes.Buffer
+	runner := &fakeRunner{}
+	cmd := newRootCommand(dependencies{
+		workDir:        root,
+		in:             strings.NewReader("yes\n"),
+		out:            &out,
+		errOut:         &out,
+		runner:         runner,
+		tagLister:      fakeTags{},
+		versionFile:    "stack.versions.yaml",
+		composeEnvFile: ".fystack.compose.env",
+	})
+	cmd.SetArgs([]string{"--env", "dev", "destroy"})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+
+	if len(runner.calls) != 1 {
+		t.Fatalf("expected one compose down call, got %d: %#v", len(runner.calls), runner.calls)
+	}
+	wantArgs := []string{"compose", "--env-file", filepath.Join(root, ".fystack.compose.env"), "-f", "docker-compose.yaml", "down", "--volumes", "--remove-orphans"}
+	if !reflect.DeepEqual(runner.calls[0].args, wantArgs) {
+		t.Fatalf("args mismatch\nwant: %#v\n got: %#v", wantArgs, runner.calls[0].args)
+	}
+
+	for _, path := range []string{
+		filepath.Join(root, "dev", "config.yaml"),
+		filepath.Join(root, "dev", "node-configs"),
+		filepath.Join(root, ".fystack.compose.env"),
+	} {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			t.Fatalf("expected %s to be removed after destroy", path)
+		}
+	}
+
+	got := out.String()
+	if !strings.Contains(got, "Destroy plan:") {
+		t.Fatalf("missing destroy plan output:\n%s", got)
+	}
+	if !strings.Contains(got, "Destroy complete.") {
+		t.Fatalf("missing completion message:\n%s", got)
+	}
+}
+
+func TestDestroyAbortedOnNo(t *testing.T) {
+	root := t.TempDir()
+	mustWrite(t, filepath.Join(root, "stack.versions.yaml"), `services:
+  apex:
+    env: FYSTACK_APEX_IMAGE
+    image: docker.io/fystacklabs/apex:1.0.54
+    environments: [dev]
+`)
+	mustWrite(t, filepath.Join(root, "dev", "docker-compose.yaml"), "services: {}\n")
+	mustWrite(t, filepath.Join(root, "dev", "config.yaml"), "name: test\n")
+
+	var out bytes.Buffer
+	runner := &fakeRunner{}
+	cmd := newRootCommand(dependencies{
+		workDir:        root,
+		in:             strings.NewReader("no\n"),
+		out:            &out,
+		errOut:         &out,
+		runner:         runner,
+		tagLister:      fakeTags{},
+		versionFile:    "stack.versions.yaml",
+		composeEnvFile: ".fystack.compose.env",
+	})
+	cmd.SetArgs([]string{"--env", "dev", "destroy"})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
+	}
+	if len(runner.calls) != 0 {
+		t.Fatalf("expected no runner calls when destroy is canceled, got %#v", runner.calls)
+	}
+	if _, err := os.Stat(filepath.Join(root, "dev", "config.yaml")); err != nil {
+		t.Fatal("config.yaml should still exist after canceled destroy")
+	}
+	if !strings.Contains(out.String(), "destroy canceled") {
+		t.Fatalf("missing canceled message:\n%s", out.String())
+	}
+}
+
 func mustWrite(t *testing.T, path, content string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {

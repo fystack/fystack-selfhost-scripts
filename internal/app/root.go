@@ -78,6 +78,7 @@ func newRootCommand(deps dependencies) *cobra.Command {
 		setupCommand(deps, opts),
 		initCommand(deps, opts),
 		resetCommand(deps, opts),
+		destroyCommand(deps, opts),
 		deployCommand(deps, opts),
 		restartCommand(deps, opts),
 		statusCommand(deps, opts),
@@ -319,6 +320,73 @@ func runReset(deps dependencies) error {
 	}
 	fmt.Fprintln(deps.out, "reset complete")
 	return nil
+}
+
+func destroyCommand(deps dependencies, opts *options) *cobra.Command {
+	var force bool
+	cmd := &cobra.Command{
+		Use:   "destroy",
+		Short: "Stop all services, remove containers, networks, and volumes",
+		Long:  "Permanently tears down the entire stack. All data is lost.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			env, err := resolveEnv(deps, opts.env)
+			if err != nil {
+				return err
+			}
+
+			fmt.Fprintln(deps.out, "Destroy plan:")
+			fmt.Fprintf(deps.out, "  environment : %s\n", env.Name)
+			fmt.Fprintf(deps.out, "  compose file: %s\n", env.ComposeFile)
+			fmt.Fprintln(deps.out, "")
+			fmt.Fprintln(deps.out, "  The following will be permanently destroyed:")
+			fmt.Fprintln(deps.out, "    - All running containers for this environment")
+			fmt.Fprintln(deps.out, "    - All Docker networks created by Compose")
+			fmt.Fprintln(deps.out, "    - All Docker volumes (database data, MPC key shares, etc.)")
+			if env.Name == "dev" {
+				fmt.Fprintln(deps.out, "    - dev/config.yaml")
+				fmt.Fprintln(deps.out, "    - dev/config.rescanner.yaml")
+				fmt.Fprintln(deps.out, "    - dev/config.indexer.yaml")
+				fmt.Fprintln(deps.out, "    - dev/node-configs/")
+				fmt.Fprintln(deps.out, "    - .fystack.compose.env")
+			}
+			fmt.Fprintln(deps.out, "")
+			fmt.Fprintln(deps.out, "  This cannot be undone.")
+
+			if !force {
+				prompt := newPrompter(deps)
+				ok, err := prompt.confirm("Do you really want to destroy everything?", false)
+				if err != nil {
+					return err
+				}
+				if !ok {
+					fmt.Fprintln(deps.out, "destroy canceled")
+					return nil
+				}
+			}
+
+			if err := writeComposeEnv(deps, opts.env); err != nil {
+				// non-fatal — compose can still run without a pinned env file
+				fmt.Fprintf(deps.errOut, "warning: could not write compose env: %v\n", err)
+			}
+			fmt.Fprintln(deps.out, "Destroying stack...")
+			out, err := runCompose(cmd.Context(), deps, env, "down", "--volumes", "--remove-orphans")
+			writeMasked(deps.out, out)
+			if err != nil {
+				return fmt.Errorf("docker compose down: %w", err)
+			}
+
+			if env.Name == "dev" {
+				if err := runReset(deps); err != nil {
+					return err
+				}
+			}
+
+			fmt.Fprintln(deps.out, "Destroy complete.")
+			return nil
+		},
+	}
+	cmd.Flags().BoolVar(&force, "force", false, "skip confirmation prompt")
+	return cmd
 }
 
 func deployCommand(deps dependencies, opts *options) *cobra.Command {

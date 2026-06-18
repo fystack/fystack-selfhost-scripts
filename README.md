@@ -219,6 +219,7 @@ fystack check-updates --env dev      # Check for newer image tags
 fystack update --env dev --all       # Update all app image pins
 fystack update --env dev --all --deploy  # Update pins and redeploy
 fystack reset                        # Remove all generated files (clean slate)
+fystack destroy --env dev            # Stop stack, wipe volumes, remove all generated files
 fystack version                      # Print CLI version
 ```
 
@@ -334,15 +335,27 @@ fystack deploy --env dev
 
 ---
 
-## Resetting to a Clean State
+## Resetting and Destroying
 
-To remove all generated files and return the repository to a freshly-cloned state:
+### Reset (files only)
+
+Remove all generated files and return the repository to a freshly-cloned state, without touching running containers:
 
 ```bash
 fystack reset
 ```
 
-This removes `dev/config.yaml`, `dev/config.rescanner.yaml`, `dev/config.indexer.yaml`, `dev/node-configs/`, and `.fystack.compose.env`. Templates and source files are never touched. After a reset, run `fystack setup` to start fresh.
+### Destroy (everything)
+
+Tear down the entire stack — stops all containers, removes Docker networks and volumes, then wipes all generated files:
+
+```bash
+fystack destroy --env dev
+```
+
+The command prints a plan showing exactly what will be removed and asks for confirmation before proceeding. This cannot be undone — all database data and MPC key shares stored in volumes are permanently lost.
+
+After a destroy, run `fystack setup` to start from scratch.
 
 ---
 

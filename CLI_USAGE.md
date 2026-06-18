@@ -299,6 +299,44 @@ After a reset, run `fystack setup` to start fresh.
 
 ---
 
+### `destroy`
+
+Permanently tear down the entire stack — stops and removes all containers, Docker networks, and volumes, then wipes all generated files:
+
+```bash
+fystack destroy --env dev
+```
+
+The command prints a destroy plan first, showing exactly what will be removed, then asks for confirmation:
+
+```
+Destroy plan:
+  environment : dev
+  compose file: dev/docker-compose.yaml
+
+  The following will be permanently destroyed:
+    - All running containers for this environment
+    - All Docker networks created by Compose
+    - All Docker volumes (database data, MPC key shares, etc.)
+    - dev/config.yaml
+    - dev/config.rescanner.yaml
+    - dev/config.indexer.yaml
+    - dev/node-configs/
+    - .fystack.compose.env
+
+  This cannot be undone.
+```
+
+Skip the confirmation prompt for scripts:
+
+```bash
+fystack destroy --env dev --force
+```
+
+After a destroy, run `fystack setup` to start from scratch.
+
+---
+
 ### `version`
 
 Print the CLI version:
