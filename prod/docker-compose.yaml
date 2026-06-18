@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   nats-prod:
-    image: nats:alpine
+    image: ${FYSTACK_NATS_PROD_IMAGE:-nats:alpine}
     container_name: nats-apex-production
     security_opt:
       - no-new-privileges:true
@@ -21,7 +21,7 @@ services:
     tty: true
 
   mongo-prod:
-    image: mongo:7.0
+    image: ${FYSTACK_MONGO_PROD_IMAGE:-mongo:7.0}
     container_name: mongo-apex-production
     security_opt:
       - no-new-privileges:true

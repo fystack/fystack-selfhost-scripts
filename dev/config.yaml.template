@@ -73,6 +73,8 @@ price_providers:
   coinmarketcap:
     endpoint: "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
     api_key: ""
+  binance:
+    endpoint: "https://api.binance.com/api/v3/ticker/price"
   codex:
     endpoint: "https://graph.defined.fi/graphql"
     api_key: ""

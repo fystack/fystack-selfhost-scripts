@@ -1,6 +1,6 @@
 services:
   migrate:
-    image: docker.io/fystacklabs/apex-migrate:1.0.24
+    image: ${FYSTACK_APEX_MIGRATE_IMAGE:-docker.io/fystacklabs/apex-migrate:1.0.24}
     # build:
     #   context: ..
     #   dockerfile: deployments/migrate/Dockerfile
@@ -23,7 +23,7 @@ services:
     # build:
     #   context: ..
     #   dockerfile: deployments/api/Dockerfile
-    image: docker.io/fystacklabs/apex:1.0.54
+    image: ${FYSTACK_APEX_IMAGE:-docker.io/fystacklabs/apex:1.0.54}
     container_name: apex
     ports:
       - "127.0.0.1:8150:8150"
@@ -53,7 +53,7 @@ services:
       - ./config.yaml:/app/config.yaml:ro
 
   rescanner:
-    image: docker.io/fystacklabs/rescanner:1.0.1
+    image: ${FYSTACK_RESCANNER_IMAGE:-docker.io/fystacklabs/rescanner:1.0.1}
     container_name: rescanner
     environment:
       - ENVIRONMENT=dev
@@ -62,10 +62,10 @@ services:
       - apex
     volumes:
       - shared-data:/app/shared
-      - ./config.rescanner.yaml:/root/config.rescanner.yaml:ro
+      - ./config.rescanner.yaml:/app/config.rescanner.yaml:ro
 
   multichain-indexer:
-    image: docker.io/fystacklabs/multichain-indexer:1.0.14
+    image: ${FYSTACK_MULTICHAIN_INDEXER_IMAGE:-docker.io/fystacklabs/multichain-indexer:1.0.14}
     container_name: multichain-indexer
     command:
       [
@@ -84,22 +84,18 @@ services:
       - ./config.indexer.yaml:/app/configs/config.yaml:ro
 
   fystack-ui-community:
-    image: docker.io/fystacklabs/fystack-ui-community:1.0.11
+    image: ${FYSTACK_UI_IMAGE:-docker.io/fystacklabs/fystack-ui-ee:1.0.17}
     container_name: fystack-ui-community
     ports:
       - "127.0.0.1:8015:8080"
     environment:
-      - API_BASE_URL=${API_BASE_URL:-http://localhost:8150}
-    entrypoint: ["/ui-entrypoint.sh"]
-    command: ["nginx", "-g", "daemon off;"]
-    volumes:
-      - ./ui-entrypoint.sh:/ui-entrypoint.sh:ro
+      API_BASE_URL: https://fystack.excelon.io
     restart: unless-stopped
     networks:
       - apex
 
   postgres:
-    image: postgres
+    image: ${FYSTACK_POSTGRES_IMAGE:-postgres}
     container_name: postgres_fystack
     ports:
       - "127.0.0.1:5433:5432"
@@ -116,7 +112,7 @@ services:
       - apex
 
   redis:
-    image: redis/redis-stack-server:latest
+    image: ${FYSTACK_REDIS_IMAGE:-redis/redis-stack-server:latest}
     container_name: redis_fystack
     ports:
       - "127.0.0.1:6380:6379"
@@ -132,7 +128,7 @@ services:
       - apex
 
   mongo:
-    image: mongo:7.0
+    image: ${FYSTACK_MONGO_IMAGE:-mongo:7.0}
     container_name: mongo_fystack
     ports:
       - "127.0.0.1:27018:27017"
@@ -150,7 +146,7 @@ services:
       - apex
 
   nats-server:
-    image: nats:latest
+    image: ${FYSTACK_NATS_IMAGE:-nats:latest}
     container_name: nats-server_fystack
     command: -js --http_port 8222
     ports:
@@ -163,7 +159,7 @@ services:
       - apex
 
   consul:
-    image: consul:1.15.4
+    image: ${FYSTACK_CONSUL_IMAGE:-consul:1.15.4}
     container_name: consul_fystack
     ports:
       - "127.0.0.1:8501:8500"
@@ -179,7 +175,7 @@ services:
       - apex
   ## MPCIUM
   mpcium0:
-    image: docker.io/fystacklabs/mpcium:0.3.5
+    image: ${FYSTACK_MPCIUM_IMAGE:-docker.io/fystacklabs/mpcium:0.3.5}
     container_name: mpcium-node0
     command: ["start", "-n", "node0", "--peers", "/app/peers.json"]
     environment:
@@ -202,7 +198,7 @@ services:
       - apex
 
   mpcium1:
-    image: docker.io/fystacklabs/mpcium:0.3.5
+    image: ${FYSTACK_MPCIUM_IMAGE:-docker.io/fystacklabs/mpcium:0.3.5}
     container_name: mpcium-node1
     command: ["start", "-n", "node1", "--peers", "/app/peers.json"]
     environment:
@@ -225,7 +221,7 @@ services:
       - apex
 
   mpcium2:
-    image: docker.io/fystacklabs/mpcium:0.3.5
+    image: ${FYSTACK_MPCIUM_IMAGE:-docker.io/fystacklabs/mpcium:0.3.5}
     container_name: mpcium-node2
     command: ["start", "-n", "node2", "--peers", "/app/peers.json"]
     environment:

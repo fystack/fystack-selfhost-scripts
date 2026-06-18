@@ -1,9 +1,9 @@
 # Fystack Self-host Quick Start Guide
 
-Welcome to **Fystack**! This guide will help you get up and running quickly with our infrastructure, including:
+Welcome to **Fystack**! This guide helps you get up and running with the self-hosted infrastructure:
 
 - **Apex**: The backend core API
-- **MPCIUM**: Self-hosted MPC nodes for secure signing and key management
+- **MPCIUM**: Self-hosted MPC nodes for secure threshold signing and key management
 
 ## Platform Support
 
@@ -27,8 +27,6 @@ With Fystack you keep full ownership of:
 - **Key material and policies** with no external dependencies
 - **Threshold signature security** that scales across on-prem and private cloud setups
 
-Run `./fystack-ignite.sh` to spin up the entire test stack in minutes. The quick start gives you hands-on access to Apex plus a local MPCIUM cluster so you can explore the architecture, build against real services, and validate the workflow before production.
-
 ---
 
 ## Components
@@ -39,15 +37,15 @@ Run `./fystack-ignite.sh` to spin up the entire test stack in minutes. The quick
 
 The API backend that handles:
 
-- Wallet and User management
+- Wallet and user management
 - Key orchestration and policy enforcement
 - Audit logging
-- API Keys
+- API keys
 - Transaction indexing
 
 ### 2. MPCIUM (MPC Nodes)
 
-Each node runs part of the threshold signing/keygen logic (based on Binance's `tss-lib`) and communicates securely with Apex and otherpeers.
+Each node runs part of the threshold signing/keygen logic (based on Binance's `tss-lib`) and communicates securely with Apex and other peers.
 
 ### 3. Multichain Indexer
 
@@ -61,8 +59,8 @@ Reindexes block gaps to ensure complete blockchain data coverage, filling in any
 
 ## Prerequisites
 
-- Docker and Docker Compose installed
-- Bash shell
+- Docker and Docker Compose installed and running
+- Go 1.26 or newer (for the CLI)
 - Internet connection
 - Recommended system: 4 vCPU, 4 GB RAM
 
@@ -70,9 +68,9 @@ Reindexes block gaps to ensure complete blockchain data coverage, filling in any
 
 > **Non-Windows users can skip this section.**
 
-Windows users must run the scripts inside **WSL2** (Windows Subsystem for Linux). Docker Desktop for Windows already uses WSL2 under the hood, so this is the natural fit.
+Windows users must run everything inside **WSL2** (Windows Subsystem for Linux).
 
-**1. Install WSL2** (if you haven't already)
+**1. Install WSL2**
 
 Open PowerShell as Administrator and run:
 
@@ -80,31 +78,72 @@ Open PowerShell as Administrator and run:
 wsl --install
 ```
 
-This installs WSL2 with Ubuntu by default. Restart your machine when prompted.
+Restart when prompted. This installs WSL2 with Ubuntu by default.
 
 **2. Install Docker Desktop for Windows**
 
-Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/). During setup, ensure **"Use the WSL 2 based engine"** is checked (it's the default).
+Download [Docker Desktop](https://www.docker.com/products/docker-desktop/). During setup, ensure **"Use the WSL 2 based engine"** is checked. Then go to **Settings > Resources > WSL Integration** and enable it for your distro.
 
-After installation, go to Docker Desktop **Settings > Resources > WSL Integration** and enable integration for your WSL2 distro (e.g., Ubuntu).
+**3. Open a WSL2 terminal**
 
-**3. Install `jq` inside WSL2**
-
-Open your WSL2 terminal (Ubuntu) and run:
-
-```bash
-sudo apt update && sudo apt install -y jq
-```
-
-**4. Open a WSL2 terminal**
-
-All subsequent commands must be run from within a WSL2 terminal, not from PowerShell or CMD. The `docker` command inside WSL2 talks to Docker Desktop automatically.
+All subsequent commands must be run from a WSL2 terminal, not from PowerShell or CMD.
 
 ```bash
 wsl
 ```
 
-## Quick Start Steps
+---
+
+## Install the CLI
+
+The `fystack` CLI manages the entire stack lifecycle: setup, deploy, status, updates, and reset.
+
+### Option 1 — Install binary (recommended)
+
+```bash
+go install github.com/fystack/fystack-selfhost-scripts/cmd/fystack@latest
+```
+
+This places the `fystack` binary in `$GOPATH/bin` (typically `~/go/bin`). Make sure that directory is on your `$PATH`:
+
+```bash
+export PATH="$PATH:$(go env GOPATH)/bin"
+```
+
+Verify:
+
+```bash
+fystack version
+```
+
+### Option 2 — Build from source
+
+```bash
+git clone git@github.com:fystack/fystack-selfhost-scripts.git
+cd fystack-selfhost-scripts
+go build -o fystack ./cmd/fystack
+sudo mv fystack /usr/local/bin/
+```
+
+Verify:
+
+```bash
+fystack version
+```
+
+### Option 3 — Run directly with `go run`
+
+If you don't want to install a binary, run commands directly from the repository root:
+
+```bash
+go run ./cmd/fystack <command>
+```
+
+All examples in this guide use `fystack <command>`. Substitute `go run ./cmd/fystack <command>` if you are using Option 3.
+
+---
+
+## Quick Start
 
 > **📺 Video Tutorial:** Watch the complete setup walkthrough on YouTube:
 >
@@ -119,224 +158,191 @@ cd fystack-selfhost-scripts
 
 ### 2. Docker Login
 
-First, authenticate with the Fystack Labs Docker registry:
+Authenticate with the Fystack Labs Docker registry:
 
 ```bash
 docker login -u fystacklabs
 ```
 
-When prompted, enter your password.
-
 > **Need the Docker password?** Join the Fystack Telegram community to get access:
 >
 > [![Telegram](https://img.shields.io/badge/Telegram-Join%20Community-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+9AtC0z8sS79iZjFl)
 
-### 3. Copy config files from the template
+### 3. Run Guided Setup
 
-```
-cp ./dev/config.yaml.template ./dev/config.yaml
-cp ./dev/config.rescanner.yaml.template ./dev/config.rescanner.yaml
-cp ./dev/config.indexer.yaml.template ./dev/config.indexer.yaml
-```
-
-> **Important:** You don't need to update all configuration values. The only mandatory configuration is the **CoinMarketCap API key**. Visit https://pro.coinmarketcap.com/login/ to create a CoinMarketCap API key, then add it to `config.yaml` under the `price_providers` configuration.
-
-### 4. Make Start Script Executable
-
-Change to the root directory, make the start script executable.
-Make sure you are at the root folder of the project
+The single `setup` command handles everything interactively:
 
 ```bash
-chmod +x ./fystack-ignite.sh
+fystack setup
 ```
 
-### 5. Start the Fystack Cluster
+It will:
 
-Run the complete setup and startup script at the root folder of the project.
+- Create dev config files from templates (or ask to overwrite if they already exist)
+- Let you choose Binance (no API key) or CoinMarketCap as the price provider
+- Generate MPC node configs using the bundled `mpcium-cli` container
+- Optionally deploy the dev stack immediately
+
+### 4. Deploy (if you skipped it in setup)
 
 ```bash
-./fystack-ignite.sh
+fystack deploy --env dev
 ```
 
-This script will automatically:
+### 5. Visit the Fystack Portal
 
-- Generate MPCIUM node configurations
-- Start all Docker Compose services
-- Extract encryption keys
-- Configure and restart the Apex service
-
-Services started include:
-
-- **NATS messaging server** (port 4223)
-- **Consul service discovery** (port 8501)
-- **PostgreSQL database** (port 5433)
-- **Redis** (port 6380)
-- **MongoDB** (port 27018)
-- **Apex API** (port 8150)
-- **3 MPC nodes** (node0, node1, node2)
-- **Automatic peer registration**
-
-### 6. Visit the Fystack Portal
-
-Once all services are running, you can access the Fystack portal at [http://localhost:8015](http://localhost:8015)
+Once all services are running, open the portal at [http://localhost:8015](http://localhost:8015)
 
 ![Fystack Portal](images/fystack-portal.png)
 
-### 7. Verify the Setup
-
-Check that all services are running:
+### 6. Verify the Setup
 
 ```bash
-docker compose -f ./dev/docker-compose.yaml ps
+fystack status --env dev
 ```
 
-You should see all services in the "Up" state.
+---
 
-### 8. View Logs (Optional)
-
-Monitor the cluster logs:
+## CLI Reference
 
 ```bash
-# View all service logs
-docker compose -f ./dev/docker-compose.yaml logs -f
-
-# View logs from a specific node
-docker compose -f ./dev/docker-compose.yaml logs -f mpcium-node0
+fystack setup                        # Guided first-time setup
+fystack doctor --env dev             # Check prerequisites and required files
+fystack init --env dev               # Generate MPC node configs
+fystack deploy --env dev             # Deploy the Docker Compose stack
+fystack status --env dev             # Show running service status
+fystack restart --env dev            # Restart services (interactive selector)
+fystack restart apex rescanner       # Restart specific services
+fystack logs --env dev               # Show recent logs (all services)
+fystack logs apex --tail 500         # Show logs for one service
+fystack check-updates --env dev      # Check for newer image tags
+fystack update --env dev --all       # Update all app image pins
+fystack update --env dev --all --deploy  # Update pins and redeploy
+fystack reset                        # Remove all generated files (clean slate)
+fystack version                      # Print CLI version
 ```
+
+See [CLI_USAGE.md](CLI_USAGE.md) for the full command reference, flags, and troubleshooting notes.
+
+---
 
 ## What's Running
 
-Your Fystack cluster includes:
-
-> **Note:** PostgreSQL, Redis, MongoDB, NATS, and Consul ports have been increased by 1 to avoid conflicts with your development environment. All ports are bound to 127.0.0.1 (localhost) for security.
+> **Note:** PostgreSQL, Redis, MongoDB, NATS, and Consul ports are offset by 1 to avoid conflicts with your local dev environment. All ports are bound to `127.0.0.1`.
 
 | Service                  | Purpose                                      | Port  |
-| ------------------------ | -------------------------------------------- | ----- |
+|--------------------------|----------------------------------------------|-------|
 | **NATS Server**          | Messaging layer for node communication       | 4223  |
 | **Consul**               | Service discovery and health checks          | 8501  |
 | **PostgreSQL**           | Database for custody operations              | 5433  |
 | **Redis**                | In-memory data store                         | 6380  |
 | **MongoDB**              | Document database                            | 27018 |
 | **Apex API**             | Main API service                             | 8150  |
-| **Migrate**              | Database migration service                   | -     |
-| **Rescanner**            | Reindexes block gaps for complete data       | -     |
-| **Multichain Indexer**   | Indexes blockchain transactions in real-time | -     |
-| **Fystack UI Community** | Community web interface for Fystack          | 8015  |
+| **Migrate**              | Database migration service                   | —     |
+| **Rescanner**            | Reindexes block gaps for complete data       | —     |
+| **Multichain Indexer**   | Indexes blockchain transactions in real-time | —     |
+| **Fystack UI Community** | Community web interface                      | 8015  |
 | **MPC Node 0**           | First MPC node                               | 8080  |
 | **MPC Node 1**           | Second MPC node                              | 8081  |
 | **MPC Node 2**           | Third MPC node                               | 8082  |
-| **MPCIUM Init**          | Peer registration service                    | -     |
+
+---
 
 ## E2E Testing
 
-Once your Fystack cluster is running, you can test the wallet creation flow using the provided end-to-end test script.
-
-### 1. Make Test Script Executable
-
-Make the E2E test script executable:
-
-```bash
-chmod +x ./e2e/create-wallet.sh
-```
-
-### 2. Run the E2E Test
-
-Execute the wallet creation test:
+Once the stack is running, test the wallet creation flow:
 
 ```bash
 ./e2e/create-wallet.sh
 ```
 
-This script will:
+This script registers a test user, signs in, creates a workspace and session, and creates an MPC wallet.
 
-- Register a test user
-- Sign in and create a workspace
-- Start a session
-- Create an MPC wallet
-
-### 3. Check Apex API Logs
-
-Monitor the Apex API logs to verify successful wallet creation:
+### Check Apex logs after the test
 
 ```bash
-docker compose -f ./dev/docker-compose.yaml logs -f apex
+fystack logs apex --env dev
 ```
 
-**Expected successful output:**
+**Expected output:**
 
 ```
-3:15AM INF Enqueueing message
-3:15AM INF Message published message len=407 topic=auditlog.event.dispatch
-3:15AM INF Received message meta={"Consumer":"event","Domain":"","NumDelivered":1,"NumPending":0,"Sequence":{"consumer_seq":2,"stream_seq":2},"Stream":"auditlog","Timestamp":"2025-08-06T03:15:55.887251886Z"}
-3:15AM INF Message Acknowledged meta={"Consumer":"event","Domain":"","NumDelivered":1,"NumPending":0,"Sequence":{"consumer_seq":2,"stream_seq":2},"Stream":"auditlog","Timestamp":"2025-08-06T03:15:55.887251886Z"}
-3:15AM INF Received message meta={"Consumer":"mpc_keygen_result","Domain":"","NumDelivered":1,"NumPending":0,"Sequence":{"consumer_seq":1,"stream_seq":1},"Stream":"mpc","Timestamp":"2025-08-06T03:15:59.081703423Z"}
-3:15AM INF Process MPC generation successfully walletID=a8f47f60-540d-4d23-8743-6fd8b5abe5ce
-3:15AM INF Message Acknowledged meta={"Consumer":"mpc_keygen_result","Domain":"","NumDelivered":1,"NumPending":0,"Sequence":{"consumer_seq":1,"stream_seq":1},"Stream":"mpc","Timestamp":"2025-08-06T03:15:59.081703423Z"}
+3:15AM INF Process MPC generation successfully walletID=a8f47f60-...
 ```
 
-### 4. Check MPC Node Logs
-
-Verify the MPC key generation process on any node (e.g., node0):
+### Check MPC node logs
 
 ```bash
-docker compose -f ./dev/docker-compose.yaml logs -f mpcium-node0
+fystack logs mpcium0 --env dev
 ```
 
-**Expected successful output:**
+**Expected output:**
 
 ```
-2025-08-06 03:15:55.000 INF Initializing session with partyID: {1,keygen}, peerIDs [{0,keygen} {1,keygen} {2,keygen}]
-2025-08-06 03:15:55.000 INF [INITIALIZED] Initialized session successfully partyID: {1,keygen}, peerIDs [{0,keygen} {1,keygen} {2,keygen}], walletID a8f47f60-540d-4d23-8743-6fd8b5abe5ce, threshold = 2
-2025-08-06 03:15:55.000 INF Initializing session with partyID: {1,keygen}, peerIDs [{0,keygen} {1,keygen} {2,keygen}]
-2025-08-06 03:15:55.000 INF [INITIALIZED] Initialized session successfully partyID: {1,keygen}, peerIDs [{0,keygen} {1,keygen} {2,keygen}], walletID a8f47f60-540d-4d23-8743-6fd8b5abe5ce, threshold = 2
-2025-08-06 03:15:56.000 INF Starting to generate key ECDSA walletID=a8f47f60-540d-4d23-8743-6fd8b5abe5ce
-2025-08-06 03:15:56.000 INF Starting to generate key EDDSA walletID=a8f47f60-540d-4d23-8743-6fd8b5abe5ce
-2025-08-06 03:15:59.000 INF Publishing message consumerName=mpc_keygen_result topic=mpc.mpc_keygen_result.a8f47f60-540d-4d23-8743-6fd8b5abe5ce
-2025-08-06 03:15:59.000 INF [COMPLETED KEY GEN] Key generation completed successfully walletID=a8f47f60-540d-4d23-8743-6fd8b5abe5ce
+INF [COMPLETED KEY GEN] Key generation completed successfully walletID=a8f47f60-...
 ```
 
-The successful completion of these logs indicates that your MPC wallet has been created and the key generation process completed across all nodes.
+---
 
 ## Deploying on a VPS / Reverse Proxy
 
-By default, the Fystack UI connects to the Apex API at `http://localhost:8150`. If you're deploying on a VPS (e.g., Linode, DigitalOcean) behind a reverse proxy, you need to set the `API_BASE_URL` environment variable so the UI can reach the API.
+By default, the Fystack UI connects to the Apex API at `http://localhost:8150`. When deploying on a VPS behind a reverse proxy, set `API_BASE_URL` so the UI can reach the API.
 
-**Option 1: Export the variable before running the script**
+**Option 1: Export before deploy**
 
 ```bash
 export API_BASE_URL=https://api.yourdomain.com
-./fystack-ignite.sh
+fystack deploy --env dev
 ```
 
-**Option 2: Create a `.env` file in the `dev/` directory**
+**Option 2: `.env` file in `dev/`**
 
 ```bash
 echo "API_BASE_URL=https://api.yourdomain.com" > dev/.env
-./fystack-ignite.sh
+fystack deploy --env dev
 ```
 
-Replace `https://api.yourdomain.com` with the public URL where your Apex API is accessible through your reverse proxy.
-
 ### Changing the API URL later
-
-To update the `API_BASE_URL` after the initial setup (e.g., switching domains):
 
 ```bash
 export API_BASE_URL=https://new-domain.com
 docker compose -f ./dev/docker-compose.yaml up -d --force-recreate fystack-ui-community
 ```
 
-This recreates the UI container with the new URL. No other services are affected.
+---
 
-## Update version
+## Updating Images
 
-To update version of a component (New docker image version)
+Check for newer app image versions:
 
+```bash
+fystack check-updates --env dev
 ```
-cd dev
-docker compose pull apex
-docker compose up -d --no-deps --force-recreate apex
+
+Update all available semver-tagged services and redeploy:
+
+```bash
+fystack update --env dev --all --deploy
 ```
+
+Update specific services:
+
+```bash
+fystack update --env dev apex mpcium
+fystack deploy --env dev
+```
+
+---
+
+## Resetting to a Clean State
+
+To remove all generated files and return the repository to a freshly-cloned state:
+
+```bash
+fystack reset
+```
+
+This removes `dev/config.yaml`, `dev/config.rescanner.yaml`, `dev/config.indexer.yaml`, `dev/node-configs/`, and `.fystack.compose.env`. Templates and source files are never touched. After a reset, run `fystack setup` to start fresh.
 
 ---
 
@@ -344,6 +350,6 @@ docker compose up -d --no-deps --force-recreate apex
 
 > **WARNING: This setup is for testing environments only.**
 >
-> For **manual deployment, Docker Compose, or Kubernetes deployment** for **maximum security**, please contact the **Fystack team** to get support and guidance on enterprise-grade deployment configurations.
+> For **manual deployment, Docker Compose, or Kubernetes deployment** for **maximum security**, please contact the **Fystack team** for enterprise-grade deployment guidance.
 >
 > [![Telegram](https://img.shields.io/badge/Telegram-Contact%20Fystack%20Team-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/+IsRhPyWuOFxmNmM9)
