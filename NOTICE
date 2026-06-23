@@ -1,0 +1,20 @@
+Fystack Self-Host Scripts
+Copyright 2025 Fystack
+
+This product is licensed under the Apache License, Version 2.0 (the "License").
+You may obtain a copy of the License in the accompanying LICENSE file or at
+http://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------------
+Scope of this license
+------------------------------------------------------------------------------
+
+The Apache License, Version 2.0 applies ONLY to the deployment and
+orchestration scripts contained in this repository (shell scripts,
+configuration templates, and related tooling).
+
+The Fystack platform software, container images, and binaries that these
+scripts deploy or reference are PROPRIETARY and are NOT covered by this
+license. They are governed by the separate Fystack Customer Agreement /
+end-user license terms. Nothing in this repository grants any right, title,
+or license to the proprietary Fystack platform software.
