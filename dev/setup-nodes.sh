@@ -28,6 +28,7 @@ BASE_DIR=${BASE_DIR:-$SCRIPT_DIR/node-configs}
 ENCRYPT_KEYS=${ENCRYPT_KEYS:-false}
 NATS_URL=${NATS_URL:-"nats://nats-server:4222"}
 CONSUL_ADDRESS=${CONSUL_ADDRESS:-"consul:8500"}
+OVERWRITE_EXISTING=${OVERWRITE_EXISTING:-false}
 
 # Detect OS for sed compatibility
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -144,7 +145,11 @@ cleanup_existing_setup() {
 
     if [ "$needs_docker_cleanup" = true ]; then
         log_warning "Found root-owned files from previous Docker runs, cleaning up with Docker..."
-        docker run --rm -v "$BASE_DIR:/data" -w /data alpine sh -c "rm -rf node* peers.json config.yaml"
+        if [ "$OVERWRITE_EXISTING" = "true" ]; then
+            docker run --rm -v "$BASE_DIR:/data" -w /data alpine sh -c "rm -rf node* peers.json config.yaml event_initiator.* integrity_signer.key"
+        else
+            docker run --rm -v "$BASE_DIR:/data" -w /data alpine sh -c "rm -rf node* peers.json config.yaml"
+        fi
     fi
 
     # Remove any remaining node directories
@@ -155,13 +160,22 @@ cleanup_existing_setup() {
         fi
     done
 
-    # Remove existing files (but preserve event_initiator keys if pk_raw is already set)
+    # Remove existing generated files. Preserve keys by default to keep running services consistent.
     for file in peers.json config.yaml; do
         if [ -f "$BASE_DIR/$file" ]; then
             log_warning "Removing existing $file"
             rm -f "$BASE_DIR/$file"
         fi
     done
+
+    if [ "$OVERWRITE_EXISTING" = "true" ]; then
+        for file in event_initiator.identity.json event_initiator.key event_initiator.key.age integrity_signer.key; do
+            if [ -f "$BASE_DIR/$file" ]; then
+                log_warning "Removing existing $file"
+                rm -f "$BASE_DIR/$file"
+            fi
+        done
+    fi
 
     log_success "Cleanup completed"
 }
@@ -241,7 +255,7 @@ generate_event_initiator() {
     fi
 
     # If pk_raw exists and keys exist, reuse them
-    if [ -n "$EXISTING_PK_RAW" ] && [ -f "event_initiator.key" ] && [ -f "event_initiator.identity.json" ]; then
+    if [ "$OVERWRITE_EXISTING" != "true" ] && [ -n "$EXISTING_PK_RAW" ] && [ -f "event_initiator.key" ] && [ -f "event_initiator.identity.json" ]; then
         log_warning "Existing event initiator found (pk_raw is set)"
         log_info "Reusing existing keys to maintain consistency with running services"
 
@@ -262,10 +276,10 @@ generate_event_initiator() {
 
         # Generate event initiator using mpcium-cli
         if [ "$ENCRYPT_KEYS" = "true" ]; then
-            run_mpcium_cli generate-initiator --encrypt
+            run_mpcium_cli generate-initiator --encrypt --overwrite
             log_success "Generated encrypted event initiator"
         else
-            run_mpcium_cli generate-initiator
+            run_mpcium_cli generate-initiator --overwrite
             log_success "Generated unencrypted event initiator"
         fi
     fi
@@ -594,6 +608,10 @@ main() {
                 ENCRYPT_KEYS=true
                 shift
                 ;;
+            --overwrite)
+                OVERWRITE_EXISTING=true
+                shift
+                ;;
             --nats-url)
                 NATS_URL="$2"
                 shift 2
@@ -614,6 +632,7 @@ main() {
                 echo "  -t, --threshold THRESHOLD      MPC threshold (default: 2)"
                 echo "  -e, --environment ENV          Environment (development/production, default: development)"
                 echo "      --encrypt                  Encrypt private keys with Age"
+                echo "      --overwrite                Regenerate existing node and key material"
                 echo "      --nats-url URL             NATS server URL (default: nats://nats-server:4222)"
                 echo "      --consul-address ADDR      Consul address (default: consul:8500)"
                 echo "  -d, --directory DIR            Base directory for setup (default: script directory/node-configs)"

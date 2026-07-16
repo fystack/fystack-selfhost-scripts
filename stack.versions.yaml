@@ -1,0 +1,53 @@
+services:
+  apex:
+    env: FYSTACK_APEX_IMAGE
+    image: docker.io/fystacklabs/apex:1.0.66
+    environments: [dev]
+  apex-migrate:
+    env: FYSTACK_APEX_MIGRATE_IMAGE
+    image: docker.io/fystacklabs/apex-migrate:1.0.26
+    environments: [dev]
+  rescanner:
+    env: FYSTACK_RESCANNER_IMAGE
+    image: docker.io/fystacklabs/rescanner:1.0.2
+    environments: [dev]
+  multichain-indexer:
+    env: FYSTACK_MULTICHAIN_INDEXER_IMAGE
+    image: docker.io/fystacklabs/multichain-indexer:1.0.16
+    environments: [dev]
+  fystack-ui-community:
+    env: FYSTACK_UI_IMAGE
+    image: docker.io/fystacklabs/fystack-ui-ee:1.0.20
+    environments: [dev]
+  mpcium:
+    env: FYSTACK_MPCIUM_IMAGE
+    image: docker.io/fystacklabs/mpcium:v1.0.0
+    environments: [dev]
+  postgres:
+    env: FYSTACK_POSTGRES_IMAGE
+    image: postgres
+    environments: [dev]
+  redis:
+    env: FYSTACK_REDIS_IMAGE
+    image: redis/redis-stack-server:latest
+    environments: [dev]
+  mongo-dev:
+    env: FYSTACK_MONGO_IMAGE
+    image: mongo:7.0
+    environments: [dev]
+  nats-dev:
+    env: FYSTACK_NATS_IMAGE
+    image: nats:latest
+    environments: [dev]
+  consul:
+    env: FYSTACK_CONSUL_IMAGE
+    image: consul:1.15.4
+    environments: [dev]
+  nats-prod:
+    env: FYSTACK_NATS_PROD_IMAGE
+    image: nats:alpine
+    environments: [prod]
+  mongo-prod:
+    env: FYSTACK_MONGO_PROD_IMAGE
+    image: mongo:7.0
+    environments: [prod]
